@@ -473,7 +473,13 @@
             padding: 15px 20px;
             border-top: 1px solid var(--wechat-dark-gray);
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-footer-right {
+            display: flex;
+            gap: 10px;
         }
         
         .btn {
@@ -494,7 +500,144 @@
             background-color: var(--wechat-green);
             color: white;
         }
-        
+
+        .btn-danger {
+            background-color: #ff4d4f;
+            color: white;
+            border: 1px solid #ff4d4f;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff7875;
+            border-color: #ff7875;
+        }
+
+        /* 导入界面样式 */
+        .import-section {
+            margin-bottom: 20px;
+        }
+
+        .import-tabs {
+            display: flex;
+            border: 1px solid var(--wechat-dark-gray);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .import-tab {
+            flex: 1;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .import-tab.active {
+            background: var(--wechat-green);
+            color: white;
+        }
+
+        .import-tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .import-content {
+            display: none;
+        }
+
+        .import-content.active {
+            display: block;
+        }
+
+        .json-preview {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid var(--wechat-dark-gray);
+        }
+
+        .preview-content {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .preview-item {
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 3px;
+            border-left: 3px solid var(--wechat-green);
+        }
+
+        .preview-label {
+            font-weight: bold;
+            color: var(--wechat-green);
+            margin-bottom: 5px;
+        }
+
+        .preview-value {
+            color: #333;
+            word-wrap: break-word;
+        }
+
+        /* 文件上传样式 */
+        .form-control[type="file"] {
+            padding: 8px;
+            border: 2px dashed var(--wechat-dark-gray);
+            border-radius: 5px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .form-control[type="file"]:hover {
+            border-color: var(--wechat-green);
+            background: #f0f8f0;
+        }
+
+        .form-control[type="file"]:focus {
+            border-color: var(--wechat-green);
+            box-shadow: 0 0 0 2px rgba(7, 193, 96, 0.2);
+        }
+
+        .btn-outline-secondary {
+            border: 1px solid #6c757d;
+            color: #6c757d;
+            background: transparent;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #6c757d;
+            color: white;
+        }
+
+        /* 删除确认对话框样式 */
+        .delete-warning {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .delete-warning p {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .warning-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .role-name-display {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
         /* 朋友圈样式 */
         .moments-container {
             flex: 1;
@@ -1246,29 +1389,96 @@
                 <div class="modal-close">&times;</div>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="roleName">角色名称</label>
-                    <input type="text" class="form-control" id="roleName" placeholder="输入角色名称">
+                <!-- 导入方式选择 -->
+                <div class="import-section">
+                    <div class="form-group">
+                        <label>导入方式</label>
+                        <div class="import-tabs">
+                            <button type="button" class="import-tab active" data-tab="manual">手动创建</button>
+                            <button type="button" class="import-tab" data-tab="json">JSON导入</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="roleAvatar">头像</label>
-                    <input type="file" class="form-control" id="roleAvatar">
+
+                <!-- 手动创建表单 -->
+                <div id="manual-form" class="import-content active">
+                    <div class="form-group">
+                        <label for="roleName">角色名称</label>
+                        <input type="text" class="form-control" id="roleName" placeholder="输入角色名称">
+                    </div>
+                    <div class="form-group">
+                        <label for="roleAvatar">头像</label>
+                        <input type="file" class="form-control" id="roleAvatar">
+                    </div>
+                    <div class="form-group">
+                        <label for="rolePrompt">角色描述 (Prompt)</label>
+                        <textarea class="form-control" id="rolePrompt" rows="8" maxlength="1000" placeholder="详细描述角色性格、背景和行为特点...（最多1000字）"></textarea>
+                        <small class="form-text text-muted">
+                            <span id="promptCharCount">0</span>/1000 字符
+                        </small>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="rolePrompt">角色描述 (Prompt)</label>
-                    <textarea class="form-control" id="rolePrompt" rows="8" maxlength="1000" placeholder="详细描述角色性格、背景和行为特点...（最多1000字）"></textarea>
-                    <small class="form-text text-muted">
-                        <span id="promptCharCount">0</span>/1000 字符
-                    </small>
+
+                <!-- JSON导入表单 -->
+                <div id="json-form" class="import-content">
+                    <div class="form-group">
+                        <label for="jsonFile">上传JSON文件</label>
+                        <input type="file" class="form-control" id="jsonFile" accept=".json" />
+                        <small class="form-text text-muted">
+                            选择包含角色预设数据的JSON文件
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="jsonInput">或手动输入JSON</label>
+                        <textarea class="form-control" id="jsonInput" rows="6" placeholder="也可以直接粘贴JSON格式的角色预设数据..."></textarea>
+                        <small class="form-text text-muted">
+                            支持包含name、prompt、personality、background、traits等字段的JSON格式
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" id="parseJson" class="btn btn-secondary">解析预览</button>
+                        <button type="button" id="clearJson" class="btn btn-outline-secondary">清空</button>
+                    </div>
+                    <div id="jsonPreview" class="json-preview" style="display: none;">
+                        <h5>解析结果预览：</h5>
+                        <div id="previewContent" class="preview-content"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary modal-close">取消</button>
-                <button class="btn btn-primary" id="saveRole">保存</button>
+                <button class="btn btn-danger" id="deleteRole" style="display: none;">删除角色</button>
+                <div class="modal-footer-right">
+                    <button class="btn btn-secondary modal-close">取消</button>
+                    <button class="btn btn-primary" id="saveRole">保存</button>
+                </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- 删除角色确认对话框 -->
+    <div class="modal" id="deleteRoleModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title">删除角色</div>
+                <div class="modal-close">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="delete-warning">
+                    <i class="fas fa-exclamation-triangle" style="color: #ff4d4f; font-size: 24px; margin-bottom: 15px;"></i>
+                    <p><strong>确定要删除这个角色吗？</strong></p>
+                    <p class="warning-text">删除当前聊天会清除全部聊天记录，此操作无法撤销。</p>
+                    <p class="role-name-display">角色：<span id="deleteRoleName"></span></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="modal-footer-right">
+                    <button class="btn btn-secondary modal-close">取消</button>
+                    <button class="btn btn-danger" id="confirmDeleteRole">确认删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 发布朋友圈模态框 -->
     <div class="modal" id="postMomentModal">
         <div class="modal-content">
@@ -1495,6 +1705,9 @@
     </div>
 
     <script>
+        // 测试JavaScript是否正常工作
+        console.log('JavaScript开始加载...');
+
         // 应用状态管理
         const appState = {
             currentView: 'chats',
@@ -1543,6 +1756,7 @@
                     name: 'AI助手',
                     lastMessage: '你好！有什么我可以帮助你的吗？',
                     lastTime: '12:30',
+                    lastUpdateTime: Date.now() - 3600000, // 1小时前
                     unread: 0,
                     messages: [
                         {
@@ -1559,6 +1773,7 @@
                     name: '历史老师',
                     lastMessage: '你对哪个历史时期最感兴趣？',
                     lastTime: '昨天',
+                    lastUpdateTime: Date.now() - 86400000, // 1天前
                     unread: 2,
                     messages: [
                         {
@@ -1575,6 +1790,7 @@
                     name: '科幻迷',
                     lastMessage: '你相信外星生命存在吗？',
                     lastTime: '星期三',
+                    lastUpdateTime: Date.now() - 259200000, // 3天前
                     unread: 0,
                     messages: [
                         {
@@ -1870,8 +2086,21 @@
         function renderChatList() {
             dom.chatList.innerHTML = '';
 
-            appState.chats.forEach(chat => {
+            // 按最后更新时间排序，最新的在前面
+            const sortedChats = [...appState.chats].sort((a, b) => {
+                const timeA = a.lastUpdateTime || 0;
+                const timeB = b.lastUpdateTime || 0;
+                return timeB - timeA;
+            });
+
+            sortedChats.forEach(chat => {
                 const role = appState.roles.find(r => r.id === chat.roleId);
+
+                // 如果找不到对应的角色，跳过这个聊天
+                if (!role) {
+                    console.warn(`找不到角色 ID: ${chat.roleId}，跳过聊天: ${chat.name}`);
+                    return;
+                }
 
                 const chatItem = document.createElement('div');
                 chatItem.className = 'chat-item';
@@ -1882,7 +2111,7 @@
                 if (role.avatar && role.avatar.startsWith('data:image')) {
                     avatarHtml = `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />`;
                 } else {
-                    avatarHtml = role.avatar;
+                    avatarHtml = role.avatar || '?';
                 }
 
                 chatItem.innerHTML = `
@@ -1910,7 +2139,17 @@
                 dom.chatList.appendChild(chatItem);
             });
         }
-        
+
+        // 将聊天移动到顶部
+        function moveToTop(chatId) {
+            const chatIndex = appState.chats.findIndex(c => c.id === chatId);
+            if (chatIndex > 0) {
+                // 将聊天移动到数组开头
+                const chat = appState.chats.splice(chatIndex, 1)[0];
+                appState.chats.unshift(chat);
+            }
+        }
+
         // 打开聊天
         function openChat(chatId) {
             const chat = appState.chats.find(c => c.id === chatId);
@@ -1921,10 +2160,18 @@
             // 更新聊天头部
             const role = appState.roles.find(r => r.id === chat.roleId);
             const avatarDiv = document.querySelector('.chat-header-avatar');
+
+            if (!role) {
+                console.warn(`找不到角色 ID: ${chat.roleId}`);
+                avatarDiv.textContent = '?';
+                document.querySelector('.chat-header-name').textContent = chat.name || '未知角色';
+                return;
+            }
+
             if (role.avatar && role.avatar.startsWith('data:image')) {
                 avatarDiv.innerHTML = `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" />`;
             } else {
-                avatarDiv.textContent = role.avatar;
+                avatarDiv.textContent = role.avatar || '?';
             }
             document.querySelector('.chat-header-name').textContent = chat.name;
 
@@ -1955,6 +2202,12 @@
                 const isSelf = msg.sender === 'user';
                 const role = isSelf ? appState.user : appState.roles.find(r => r.id === appState.chats.find(c => c.id === appState.currentChat).roleId);
 
+                // 如果找不到角色，使用默认值
+                if (!role) {
+                    console.warn(`找不到消息对应的角色`);
+                    return; // 跳过这条消息
+                }
+
                 const messageRow = document.createElement('div');
                 messageRow.className = `message-row ${isSelf ? 'self' : ''}`;
 
@@ -1962,7 +2215,7 @@
                 if (role.avatar && role.avatar.startsWith('data:image')) {
                     avatarHtml = `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" />`;
                 } else {
-                    avatarHtml = role.avatar;
+                    avatarHtml = role.avatar || '?';
                 }
 
                 // 处理消息内容，确保换行符正确显示
@@ -1994,12 +2247,18 @@
             
             appState.moments.forEach(moment => {
                 const role = appState.roles.find(r => r.id === moment.roleId);
-                
+
+                // 如果找不到角色，跳过这个朋友圈
+                if (!role) {
+                    console.warn(`找不到朋友圈对应的角色 ID: ${moment.roleId}`);
+                    return;
+                }
+
                 const momentCard = document.createElement('div');
                 momentCard.className = 'moment-card';
                 momentCard.innerHTML = `
                     <div class="moment-header">
-                        <div class="moment-avatar">${role.avatar}</div>
+                        <div class="moment-avatar">${role.avatar || '?'}</div>
                         <div class="moment-user">
                             <div class="moment-name">${moment.name}</div>
                             <div class="moment-time">${moment.time}</div>
@@ -2054,7 +2313,62 @@
                 openPostMomentModal();
             });
         }
-        
+
+        // 打开发布朋友圈模态框
+        function openPostMomentModal() {
+            dom.postMomentModal.classList.add('active');
+
+            // 清空表单
+            document.getElementById('momentContent').value = '';
+            document.getElementById('momentImages').value = '';
+
+            // 绑定模态框关闭事件
+            bindModalCloseEvents();
+        }
+
+        // 发布新朋友圈
+        function postNewMoment() {
+            const content = document.getElementById('momentContent').value.trim();
+            const imagesInput = document.getElementById('momentImages');
+
+            if (!content) {
+                alert('请输入朋友圈内容');
+                return;
+            }
+
+            // 创建新朋友圈
+            const newMoment = {
+                id: `moment-${Date.now()}`,
+                roleId: 'user', // 用户发布的朋友圈
+                name: appState.user.name,
+                content: content,
+                time: '刚刚',
+                images: [],
+                likes: 0,
+                comments: []
+            };
+
+            // 处理图片（如果有的话）
+            if (imagesInput.files && imagesInput.files.length > 0) {
+                // 这里可以添加图片处理逻辑
+                // 暂时跳过图片处理
+            }
+
+            // 添加到朋友圈列表
+            appState.moments.unshift(newMoment);
+
+            // 保存数据
+            saveData();
+
+            // 重新渲染朋友圈
+            renderMoments();
+
+            // 关闭模态框
+            dom.postMomentModal.classList.remove('active');
+
+            alert('朋友圈发布成功！');
+        }
+
         // 设置事件监听器
         function setupEventListeners() {
             // 导航切换
@@ -2090,22 +2404,14 @@
 
             // 添加角色
             document.getElementById('addContact').addEventListener('click', () => {
-                // 清空表单
-                document.getElementById('roleName').value = '';
-                document.getElementById('rolePrompt').value = '';
-                document.getElementById('roleAvatar').value = '';
-                document.getElementById('saveRole').dataset.editRoleId = '';
+                resetRoleForm();
                 document.getElementById('addRoleModal').classList.add('active');
                 bindRoleEditEvents(); // 绑定角色编辑相关事件
             });
 
             // 新建聊天
             document.getElementById('newChat').addEventListener('click', () => {
-                // 清空表单
-                document.getElementById('roleName').value = '';
-                document.getElementById('rolePrompt').value = '';
-                document.getElementById('roleAvatar').value = '';
-                document.getElementById('saveRole').dataset.editRoleId = '';
+                resetRoleForm();
                 document.getElementById('addRoleModal').classList.add('active');
                 bindRoleEditEvents(); // 绑定角色编辑相关事件
             });
@@ -2158,6 +2464,44 @@
             };
         }
 
+        // 重置角色表单
+        function resetRoleForm() {
+            // 清空手动创建表单
+            document.getElementById('roleName').value = '';
+            document.getElementById('rolePrompt').value = '';
+            document.getElementById('roleAvatar').value = '';
+            document.getElementById('saveRole').dataset.editRoleId = '';
+
+            // 清空JSON导入表单
+            document.getElementById('jsonInput').value = '';
+            document.getElementById('jsonFile').value = '';
+            document.getElementById('jsonPreview').style.display = 'none';
+
+            // 重置到手动创建模式
+            document.querySelectorAll('.import-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === 'manual') {
+                    tab.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.import-content').forEach(content => {
+                content.classList.remove('active');
+                if (content.id === 'manual-form') {
+                    content.classList.add('active');
+                }
+            });
+
+            // 清理全局变量
+            window.parsedRoleData = null;
+
+            // 隐藏删除按钮（新建模式）
+            const deleteBtn = document.getElementById('deleteRole');
+            if (deleteBtn) {
+                deleteBtn.style.display = 'none';
+            }
+        }
+
         // 绑定角色编辑相关事件
         function bindRoleEditEvents() {
             const promptTextarea = document.getElementById('rolePrompt');
@@ -2189,6 +2533,410 @@
                     setTimeout(updateCharCount, 10);
                 };
             }
+
+            // 绑定导入方式切换
+            bindImportTabEvents();
+
+            // 绑定JSON解析功能
+            bindJsonParseEvents();
+
+            // 绑定删除按钮事件
+            bindDeleteRoleEvents();
+        }
+
+        // 绑定导入方式切换事件
+        function bindImportTabEvents() {
+            const importTabs = document.querySelectorAll('.import-tab');
+            const importContents = document.querySelectorAll('.import-content');
+
+            importTabs.forEach(tab => {
+                tab.onclick = function() {
+                    const targetTab = this.dataset.tab;
+
+                    // 切换标签页状态
+                    importTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // 切换内容显示
+                    importContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === targetTab + '-form') {
+                            content.classList.add('active');
+                        }
+                    });
+                };
+            });
+        }
+
+        // 绑定JSON解析事件
+        function bindJsonParseEvents() {
+            const parseJsonBtn = document.getElementById('parseJson');
+            const clearJsonBtn = document.getElementById('clearJson');
+            const jsonInput = document.getElementById('jsonInput');
+            const jsonFile = document.getElementById('jsonFile');
+            const jsonPreview = document.getElementById('jsonPreview');
+            const previewContent = document.getElementById('previewContent');
+
+            if (parseJsonBtn && jsonInput && jsonPreview && previewContent) {
+                // 文件上传处理
+                if (jsonFile) {
+                    jsonFile.onchange = function(event) {
+                        const file = event.target.files[0];
+                        if (!file) return;
+
+                        // 验证文件类型
+                        if (!file.name.toLowerCase().endsWith('.json')) {
+                            alert('请选择JSON格式的文件');
+                            jsonFile.value = '';
+                            return;
+                        }
+
+                        // 读取文件内容
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const jsonText = e.target.result;
+
+                                // 验证文件内容不为空
+                                if (!jsonText || jsonText.trim() === '') {
+                                    throw new Error('文件内容为空');
+                                }
+
+                                jsonInput.value = jsonText; // 同步到文本框
+
+                                // 自动解析
+                                const jsonData = JSON.parse(jsonText);
+
+                                // 验证JSON数据
+                                if (!jsonData || typeof jsonData !== 'object') {
+                                    throw new Error('JSON数据格式无效');
+                                }
+
+                                const parsedRole = parseJsonToRole(jsonData);
+                                displayJsonPreview(parsedRole, previewContent);
+                                jsonPreview.style.display = 'block';
+                            } catch (error) {
+                                console.error('JSON解析错误:', error);
+                                alert('JSON文件格式错误：' + error.message);
+                                jsonFile.value = '';
+                                jsonInput.value = '';
+                                jsonPreview.style.display = 'none';
+                            }
+                        };
+
+                        reader.onerror = function() {
+                            alert('文件读取失败，请重试');
+                            jsonFile.value = '';
+                        };
+
+                        reader.readAsText(file, 'UTF-8');
+                    };
+                }
+
+                // 手动解析按钮
+                parseJsonBtn.onclick = function() {
+                    const jsonText = jsonInput.value.trim();
+                    if (!jsonText) {
+                        alert('请上传JSON文件或输入JSON数据');
+                        return;
+                    }
+
+                    try {
+                        const jsonData = JSON.parse(jsonText);
+                        const parsedRole = parseJsonToRole(jsonData);
+                        displayJsonPreview(parsedRole, previewContent);
+                        jsonPreview.style.display = 'block';
+                    } catch (error) {
+                        alert('JSON格式错误：' + error.message);
+                        jsonPreview.style.display = 'none';
+                    }
+                };
+
+                // 清空按钮
+                if (clearJsonBtn) {
+                    clearJsonBtn.onclick = function() {
+                        jsonInput.value = '';
+                        jsonFile.value = '';
+                        jsonPreview.style.display = 'none';
+                        window.parsedRoleData = null;
+                    };
+                }
+            }
+        }
+
+        // 绑定删除角色事件
+        function bindDeleteRoleEvents() {
+            const deleteBtn = document.getElementById('deleteRole');
+            const confirmDeleteBtn = document.getElementById('confirmDeleteRole');
+            const deleteModal = document.getElementById('deleteRoleModal');
+            const deleteRoleName = document.getElementById('deleteRoleName');
+
+            if (deleteBtn && confirmDeleteBtn && deleteModal && deleteRoleName) {
+                // 检查是否是编辑模式（有roleId）
+                const roleId = document.getElementById('saveRole').dataset.editRoleId;
+                if (roleId) {
+                    // 编辑模式，显示删除按钮
+                    deleteBtn.style.display = 'block';
+
+                    // 获取角色信息
+                    const role = appState.roles.find(r => r.id === roleId);
+                    if (role) {
+                        deleteRoleName.textContent = role.name;
+                    }
+                } else {
+                    // 新建模式，隐藏删除按钮
+                    deleteBtn.style.display = 'none';
+                }
+
+                // 删除按钮点击事件
+                deleteBtn.onclick = function() {
+                    deleteModal.classList.add('active');
+                };
+
+                // 确认删除按钮点击事件
+                confirmDeleteBtn.onclick = function() {
+                    deleteRoleAndChats(roleId);
+                    deleteModal.classList.remove('active');
+                    document.getElementById('addRoleModal').classList.remove('active');
+                };
+            }
+        }
+
+        // 删除角色和相关聊天记录
+        function deleteRoleAndChats(roleId) {
+            if (!roleId) return;
+
+            // 找到要删除的角色
+            const roleIndex = appState.roles.findIndex(r => r.id === roleId);
+            if (roleIndex === -1) return;
+
+            const role = appState.roles[roleIndex];
+
+            // 找到所有相关的聊天记录
+            const relatedChats = appState.chats.filter(c => c.roleId === roleId);
+            const isCurrentChatDeleted = relatedChats.some(c => c.id === appState.currentChat);
+
+            // 删除角色
+            appState.roles.splice(roleIndex, 1);
+
+            // 删除相关聊天记录
+            appState.chats = appState.chats.filter(c => c.roleId !== roleId);
+
+            // 如果删除的是当前聊天，需要处理界面状态
+            if (isCurrentChatDeleted) {
+                appState.currentChat = null;
+
+                // 如果还有其他聊天，打开第一个
+                if (appState.chats.length > 0) {
+                    openChat(appState.chats[0].id);
+                } else {
+                    // 没有聊天了，显示聊天列表
+                    switchView('chats');
+                    document.querySelector('.chat-container').style.display = 'none';
+                }
+            }
+
+            // 保存数据并更新界面
+            saveData();
+            renderChatList();
+
+            // 显示删除成功提示
+            alert(`角色"${role.name}"及其相关聊天记录已删除`);
+        }
+
+        // 安全的数组转换函数
+        function safeArrayConvert(value) {
+            if (value === null || value === undefined) return [];
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string') return [value];
+            if (typeof value === 'number') return [value.toString()];
+            return [String(value)];
+        }
+
+        // JSON角色预设解析器
+        function parseJsonToRole(jsonData) {
+            try {
+                // 验证输入数据
+                if (!jsonData || typeof jsonData !== 'object') {
+                    throw new Error('无效的JSON数据');
+                }
+
+                const role = {
+                    id: `role-${Date.now()}`,
+                    name: '',
+                    avatar: '',
+                    prompt: '',
+                    // 扩展字段支持复杂角色信息
+                    personality: '',
+                    background: '',
+                    traits: [],
+                    skills: [],
+                    relationships: {},
+                    memories: [],
+                    goals: [],
+                    fears: [],
+                    likes: [],
+                    dislikes: [],
+                    speaking_style: '',
+                    appearance: '',
+                    age: '',
+                    occupation: '',
+                    location: '',
+                    extra_info: {}
+                };
+
+                // 基础字段映射
+                if (jsonData.name) role.name = jsonData.name;
+                if (jsonData.avatar) role.avatar = jsonData.avatar;
+                if (jsonData.prompt) role.prompt = jsonData.prompt;
+
+                // 扩展字段映射
+                if (jsonData.personality) role.personality = String(jsonData.personality);
+                if (jsonData.background) role.background = String(jsonData.background);
+                if (jsonData.traits) role.traits = safeArrayConvert(jsonData.traits);
+                if (jsonData.skills) role.skills = safeArrayConvert(jsonData.skills);
+                if (jsonData.relationships && typeof jsonData.relationships === 'object') {
+                    role.relationships = jsonData.relationships;
+                }
+                if (jsonData.memories) role.memories = safeArrayConvert(jsonData.memories);
+                if (jsonData.goals) role.goals = safeArrayConvert(jsonData.goals);
+                if (jsonData.fears) role.fears = safeArrayConvert(jsonData.fears);
+                if (jsonData.likes) role.likes = safeArrayConvert(jsonData.likes);
+                if (jsonData.dislikes) role.dislikes = safeArrayConvert(jsonData.dislikes);
+                if (jsonData.speaking_style || jsonData.speakingStyle) role.speaking_style = jsonData.speaking_style || jsonData.speakingStyle;
+                if (jsonData.appearance) role.appearance = jsonData.appearance;
+                if (jsonData.age) role.age = jsonData.age;
+                if (jsonData.occupation) role.occupation = jsonData.occupation;
+                if (jsonData.location) role.location = jsonData.location;
+
+                // 处理其他未知字段
+                Object.keys(jsonData).forEach(key => {
+                    if (!['name', 'avatar', 'prompt', 'personality', 'background', 'traits', 'skills',
+                          'relationships', 'memories', 'goals', 'fears', 'likes', 'dislikes',
+                          'speaking_style', 'speakingStyle', 'appearance', 'age', 'occupation', 'location'].includes(key)) {
+                        role.extra_info[key] = jsonData[key];
+                    }
+                });
+
+                // 如果没有基础prompt，尝试从其他字段生成
+                if (!role.prompt && (role.personality || role.background)) {
+                    role.prompt = generatePromptFromFields(role);
+                }
+
+                // 设置默认头像
+                if (!role.avatar && role.name) {
+                    role.avatar = role.name.charAt(0);
+                }
+
+                return role;
+            } catch (error) {
+                console.error('角色数据解析错误:', error);
+                throw new Error('角色数据解析失败: ' + error.message);
+            }
+        }
+
+        // 从扩展字段生成prompt
+        function generatePromptFromFields(role) {
+            let prompt = '';
+
+            if (role.name) {
+                prompt += `我是${role.name}。`;
+            }
+
+            if (role.personality) {
+                prompt += `性格特点：${role.personality}。`;
+            }
+
+            if (role.background) {
+                prompt += `背景：${role.background}。`;
+            }
+
+            if (role.occupation) {
+                prompt += `职业：${role.occupation}。`;
+            }
+
+            if (role.traits && role.traits.length > 0) {
+                prompt += `特征：${role.traits.join('、')}。`;
+            }
+
+            if (role.speaking_style) {
+                prompt += `说话风格：${role.speaking_style}。`;
+            }
+
+            return prompt;
+        }
+
+        // HTML转义函数
+        function escapeHtml(text) {
+            if (typeof text !== 'string') return text;
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // 显示JSON解析预览
+        function displayJsonPreview(role, container) {
+            let html = '';
+
+            // 基础信息
+            if (role.name) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">角色名称</div>
+                    <div class="preview-value">${escapeHtml(role.name)}</div>
+                </div>`;
+            }
+
+            if (role.prompt) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">角色描述</div>
+                    <div class="preview-value">${escapeHtml(role.prompt)}</div>
+                </div>`;
+            }
+
+            // 扩展信息
+            if (role.personality) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">性格特点</div>
+                    <div class="preview-value">${escapeHtml(role.personality)}</div>
+                </div>`;
+            }
+
+            if (role.background) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">背景故事</div>
+                    <div class="preview-value">${escapeHtml(role.background)}</div>
+                </div>`;
+            }
+
+            if (role.traits && role.traits.length > 0) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">特征标签</div>
+                    <div class="preview-value">${escapeHtml(role.traits.join('、'))}</div>
+                </div>`;
+            }
+
+            if (role.speaking_style) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">说话风格</div>
+                    <div class="preview-value">${escapeHtml(role.speaking_style)}</div>
+                </div>`;
+            }
+
+            // 其他信息
+            if (Object.keys(role.extra_info).length > 0) {
+                html += `<div class="preview-item">
+                    <div class="preview-label">其他信息</div>
+                    <div class="preview-value">${escapeHtml(JSON.stringify(role.extra_info, null, 2))}</div>
+                </div>`;
+            }
+
+            container.innerHTML = html;
+
+            // 将解析结果存储到全局变量，供保存时使用
+            window.parsedRoleData = role;
         }
 
         // 绑定设置项点击事件（每次切换到设置页面都重新绑定）
@@ -2278,7 +3026,15 @@
 
                 chat.messages.push(aiMessage);
                 renderMessages(chat.messages);
+
+                // 更新聊天列表信息（AI回复）
+                chat.lastMessage = aiMessage.content.length > 30 ?
+                    aiMessage.content.substring(0, 30) + '...' : aiMessage.content;
+                chat.lastTime = '刚刚';
+                chat.lastUpdateTime = Date.now();
+
                 saveData();
+                renderChatList();
             } catch (err) {
                 hideTypingIndicator && hideTypingIndicator();
                 const aiMessage = {
@@ -2289,14 +3045,18 @@
                 };
                 chat.messages.push(aiMessage);
                 renderMessages(chat.messages);
+
+                // 更新聊天列表信息（错误回复）
+                chat.lastMessage = 'AI回复失败，请检查API配置。';
+                chat.lastTime = '刚刚';
+                chat.lastUpdateTime = Date.now();
+
                 saveData();
+                renderChatList();
             }
 
-            // 更新聊天列表
-            chat.lastMessage = message;
-            chat.lastTime = '刚刚';
-            saveData();
-            renderChatList();
+            // 将当前聊天移动到列表顶部
+            moveToTop(chat.id);
         }
 
         // 真实AI回复（支持多个API提供商）
@@ -2327,7 +3087,7 @@
             let systemPrompt = '';
 
             if (shouldSendRoleInfo) {
-                systemPrompt += `你是${role.name}。${role.prompt || ''}`;
+                systemPrompt += buildCompleteRolePrompt(role);
             } else {
                 systemPrompt += `你是${role.name}。`;
             }
@@ -2552,43 +3312,95 @@ ${globalPreset.statusBar.prompt}`;
         
         // 初始化应用
         window.addEventListener('DOMContentLoaded', () => {
-            initApp();
-            // 不需要在这里绑定头像和设置事件，initApp会自动调用
-            bindModalCloseEvents();
+            console.log('DOM加载完成，开始初始化...');
+            try {
+                initApp();
+                // 不需要在这里绑定头像和设置事件，initApp会自动调用
+                bindModalCloseEvents();
+                console.log('初始化完成');
+            } catch (error) {
+                console.error('初始化失败:', error);
+                alert('页面初始化失败: ' + error.message);
+            }
         });
 
         function saveNewRole() {
             const roleId = dom.saveRole.dataset.editRoleId;
-            const name = document.getElementById('roleName').value.trim();
-            const prompt = document.getElementById('rolePrompt').value.trim();
+
+            // 检查是否是JSON导入模式
+            const activeTab = document.querySelector('.import-tab.active');
+            const isJsonMode = activeTab && activeTab.dataset.tab === 'json';
+
+            let roleData;
+
+            if (isJsonMode && window.parsedRoleData) {
+                // JSON导入模式
+                roleData = window.parsedRoleData;
+
+                // 验证必要字段
+                if (!roleData.name) {
+                    alert('JSON数据中缺少角色名称');
+                    return;
+                }
+            } else {
+                // 手动创建模式
+                const name = document.getElementById('roleName').value.trim();
+                const prompt = document.getElementById('rolePrompt').value.trim();
+
+                if (!name || !prompt) {
+                    alert('请填写角色名称和描述');
+                    return;
+                }
+
+                roleData = {
+                    id: roleId || `role-${Date.now()}`,
+                    name: name,
+                    prompt: prompt,
+                    avatar: null // 先设为null，后面统一处理头像
+                };
+            }
+
+            // 处理头像
             const avatarInput = document.getElementById('roleAvatar');
-            let avatar = null;
 
-            // 找到要修改的角色
-            const role = appState.roles.find(r => r.id === roleId);
-            if (!role) return;
+            if (roleId) {
+                // 编辑现有角色
+                const role = appState.roles.find(r => r.id === roleId);
+                if (!role) return;
 
+                updateExistingRole(role, roleData, avatarInput);
+            } else {
+                // 创建新角色
+                createNewRole(roleData, avatarInput);
+            }
+        }
+
+        // 更新现有角色
+        function updateExistingRole(role, roleData, avatarInput) {
             // 头像处理（如有新上传则用新头像，否则保持原头像）
             if (avatarInput.files && avatarInput.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    role.avatar = e.target.result;
+                    roleData.avatar = e.target.result;
                     updateRoleAndClose();
                 };
                 reader.readAsDataURL(avatarInput.files[0]);
             } else {
-                // 没有新头像，直接保存
+                // 没有新头像，保持原有头像或设置默认头像
+                if (!roleData.avatar || roleData.avatar === null) {
+                    roleData.avatar = role.avatar || roleData.name.charAt(0).toUpperCase();
+                }
                 updateRoleAndClose();
             }
 
             function updateRoleAndClose() {
-                role.name = name;
-                role.prompt = prompt;
+                // 更新角色数据（包括扩展字段）
+                Object.assign(role, roleData);
 
                 // 同步更新聊天列表中的角色名称
-                const relatedChats = appState.chats.filter(c => c.roleId === roleId);
+                const relatedChats = appState.chats.filter(c => c.roleId === role.id);
                 relatedChats.forEach(chat => {
-                    chat.name = name; // 更新聊天列表中显示的名称
+                    chat.name = roleData.name; // 更新聊天列表中显示的名称
                 });
 
                 saveData();
@@ -2600,14 +3412,193 @@ ${globalPreset.statusBar.prompt}`;
                 // 如果当前聊天用的是这个角色，刷新聊天头部和名称
                 if (appState.currentChat) {
                     const chat = appState.chats.find(c => c.id === appState.currentChat);
-                    if (chat && chat.roleId === roleId) {
+                    if (chat && chat.roleId === role.id) {
                         // 更新聊天头部名称
-                        document.querySelector('.chat-header-name').textContent = name;
+                        document.querySelector('.chat-header-name').textContent = roleData.name;
                         // 重新渲染整个聊天界面以确保所有地方都更新
                         openChat(chat.id);
                     }
                 }
             }
+        }
+
+        // 创建新角色
+        function createNewRole(roleData, avatarInput) {
+            // 头像处理
+            if (avatarInput.files && avatarInput.files[0]) {
+                // 有上传的头像文件
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    roleData.avatar = e.target.result;
+                    createRoleAndChat();
+                };
+                reader.readAsDataURL(avatarInput.files[0]);
+            } else {
+                // 没有上传头像文件，设置默认头像
+                if (!roleData.avatar || roleData.avatar === null) {
+                    roleData.avatar = roleData.name.charAt(0).toUpperCase();
+                }
+                createRoleAndChat();
+            }
+
+            function createRoleAndChat() {
+                // 添加角色到状态
+                appState.roles.push(roleData);
+
+                // 创建新聊天
+                const newChat = {
+                    id: `chat-${Date.now()}`,
+                    roleId: roleData.id,
+                    name: roleData.name,
+                    lastMessage: '开始聊天吧！',
+                    lastTime: '刚刚',
+                    lastUpdateTime: Date.now(), // 添加时间戳用于排序
+                    unread: 0,
+                    messages: [
+                        {
+                            id: `msg-${Date.now()}`,
+                            sender: 'ai',
+                            content: generateWelcomeMessage(roleData),
+                            time: '刚刚'
+                        }
+                    ]
+                };
+
+                appState.chats.push(newChat);
+
+                saveData();
+                renderChatList();
+
+                // 关闭弹窗
+                dom.addRoleModal.classList.remove('active');
+
+                // 清理JSON解析数据
+                window.parsedRoleData = null;
+
+                // 自动打开新创建的聊天
+                openChat(newChat.id);
+            }
+        }
+
+        // 生成欢迎消息
+        function generateWelcomeMessage(roleData) {
+            let message = `你好！我是${roleData.name}。`;
+
+            if (roleData.personality) {
+                message += `我的性格特点是${roleData.personality}。`;
+            }
+
+            if (roleData.occupation) {
+                message += `我的职业是${roleData.occupation}。`;
+            }
+
+            message += '很高兴认识你，我们开始聊天吧！';
+
+            return message;
+        }
+
+        // 构建完整的角色提示词（支持复杂角色数据）
+        function buildCompleteRolePrompt(role) {
+            let prompt = `你是${role.name}。`;
+
+            // 基础描述
+            if (role.prompt) {
+                prompt += `${role.prompt}`;
+            }
+
+            // 性格特点
+            if (role.personality) {
+                prompt += `\n\n性格特点：${role.personality}`;
+            }
+
+            // 背景故事
+            if (role.background) {
+                prompt += `\n\n背景故事：${role.background}`;
+            }
+
+            // 职业信息
+            if (role.occupation) {
+                prompt += `\n\n职业：${role.occupation}`;
+            }
+
+            // 年龄信息
+            if (role.age) {
+                prompt += `\n\n年龄：${role.age}`;
+            }
+
+            // 外貌描述
+            if (role.appearance) {
+                prompt += `\n\n外貌：${role.appearance}`;
+            }
+
+            // 特征标签
+            if (role.traits && role.traits.length > 0) {
+                prompt += `\n\n特征：${role.traits.join('、')}`;
+            }
+
+            // 技能
+            if (role.skills && role.skills.length > 0) {
+                prompt += `\n\n技能：${role.skills.join('、')}`;
+            }
+
+            // 喜好
+            if (role.likes && role.likes.length > 0) {
+                prompt += `\n\n喜欢：${role.likes.join('、')}`;
+            }
+
+            // 厌恶
+            if (role.dislikes && role.dislikes.length > 0) {
+                prompt += `\n\n不喜欢：${role.dislikes.join('、')}`;
+            }
+
+            // 恐惧
+            if (role.fears && role.fears.length > 0) {
+                prompt += `\n\n害怕：${role.fears.join('、')}`;
+            }
+
+            // 目标
+            if (role.goals && role.goals.length > 0) {
+                prompt += `\n\n目标：${role.goals.join('、')}`;
+            }
+
+            // 说话风格
+            if (role.speaking_style) {
+                prompt += `\n\n说话风格：${role.speaking_style}`;
+            }
+
+            // 人际关系
+            if (role.relationships && Object.keys(role.relationships).length > 0) {
+                prompt += `\n\n人际关系：`;
+                Object.entries(role.relationships).forEach(([person, relation]) => {
+                    prompt += `\n- ${person}：${relation}`;
+                });
+            }
+
+            // 记忆
+            if (role.memories && role.memories.length > 0) {
+                prompt += `\n\n重要记忆：${role.memories.join('；')}`;
+            }
+
+            // 位置信息
+            if (role.location) {
+                prompt += `\n\n所在地：${role.location}`;
+            }
+
+            // 其他扩展信息
+            if (role.extra_info && Object.keys(role.extra_info).length > 0) {
+                prompt += `\n\n其他信息：`;
+                Object.entries(role.extra_info).forEach(([key, value]) => {
+                    if (typeof value === 'string' || typeof value === 'number') {
+                        prompt += `\n- ${key}：${value}`;
+                    } else if (Array.isArray(value)) {
+                        prompt += `\n- ${key}：${value.join('、')}`;
+                    } else if (typeof value === 'object') {
+                        prompt += `\n- ${key}：${JSON.stringify(value)}`;
+                    }
+                });
+            }
+
+            return prompt;
         }
 
         // 清除当前聊天记录
