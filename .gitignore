@@ -1,0 +1,38 @@
+# 系统文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志文件
+*.log
+logs/
+
+# 临时文件
+*.tmp
+*.temp
+temp/
+tmp/
+
+# 备份文件
+*.bak
+*.backup
+
+# 不需要的Python文件
+*.pyc
+__pycache__/
+get-pip.py
+
+# 不需要的测试文件
+play2.html
+twitter_search_bot.py

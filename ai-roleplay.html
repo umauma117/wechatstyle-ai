@@ -1,0 +1,2784 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeChat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --wechat-green: #07C160;
+            --wechat-light-green: #E0F5E9;
+            --wechat-gray: #F5F5F5;
+            --wechat-dark-gray: #E6E6E6;
+            --wechat-text: #333;
+            --wechat-light-text: #888;
+            --header-height: 50px;
+            --footer-height: 60px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #EDEDED;
+            color: var(--wechat-text);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            background-color: white;
+        }
+        
+        /* 侧边导航 */
+        .sidebar {
+            width: 80px;
+            background-color: #2E2E2E;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            justify-content: space-between; /* 让设置按钮靠底部 */
+        }
+        .sidebar-top {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .sidebar-bottom {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .nav-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .nav-item:last-child {
+            margin-bottom: 0;
+        }
+        .nav-item.active {
+            background-color: var(--wechat-green);
+            color: white;
+        }
+        .nav-item i {
+            font-size: 28px;
+        }
+        
+        /* 聊天列表 */
+        .chat-list {
+            width: 300px;
+            border-right: 1px solid var(--wechat-dark-gray);
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .list-header {
+            height: var(--header-height);
+            background-color: white;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+        }
+        
+        .list-header h2 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .list-header-actions i {
+            font-size: 20px;
+            margin-left: 15px;
+            color: var(--wechat-light-text);
+            cursor: pointer;
+        }
+        
+        .search-box {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 8px 15px 8px 35px;
+            border-radius: 20px;
+            border: none;
+            background-color: var(--wechat-gray);
+            font-size: 14px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="gray" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: 10px center;
+        }
+        
+        .chat-items {
+            display: flex;
+            flex-direction: column;
+            /* 保证竖直排列 */
+            width: 100%;
+        }
+        
+        .chat-item {
+            display: flex;
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+            transition: background-color 0.2s;
+        }
+        
+        .chat-item:hover, .chat-item.active {
+            background-color: var(--wechat-gray);
+        }
+        
+        .chat-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background-color: var(--wechat-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .chat-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .chat-name {
+            font-weight: 500;
+            font-size: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .chat-time {
+            color: var(--wechat-light-text);
+            font-size: 12px;
+        }
+        
+        .chat-preview {
+            color: var(--wechat-light-text);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 聊天主界面 */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #F0F0F0;
+            position: relative;
+        }
+        
+        .chat-header {
+            height: var(--header-height);
+            background-color: white;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+        }
+        
+        .chat-header-back {
+            display: none;
+            margin-right: 10px;
+        }
+        
+        .chat-header-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background-color: var(--wechat-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        
+        .chat-header-info {
+            flex: 1;
+        }
+        
+        .chat-header-name {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        .chat-header-status {
+            color: var(--wechat-light-text);
+            font-size: 12px;
+        }
+        
+        .chat-header-actions i {
+            font-size: 20px;
+            margin-left: 15px;
+            color: var(--wechat-light-text);
+            cursor: pointer;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message-row {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .message-row.self {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            background-color: var(--wechat-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .message-bubble {
+            max-width: 70%;
+            margin: 0 10px;
+            position: relative;
+        }
+        
+        .message-content {
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .message-row.self .message-content {
+            background-color: var(--wechat-light-green);
+        }
+        
+        .message-time {
+            font-size: 12px;
+            color: var(--wechat-light-text);
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .message-row.self .message-time {
+            text-align: left;
+        }
+        
+        .chat-input-area {
+            padding: 10px;
+            background-color: white;
+            border-top: 1px solid var(--wechat-dark-gray);
+        }
+        
+        .input-tools {
+            display: flex;
+            align-items: center;
+            padding: 5px 0;
+        }
+        
+        .tool-item {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: var(--wechat-light-text);
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .input-box {
+            display: flex;
+            align-items: center;
+            background-color: var(--wechat-gray);
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+        
+        .input-box textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            resize: none;
+            outline: none;
+            font-size: 15px;
+            padding: 8px;
+            max-height: 100px;
+            height: 40px;
+        }
+        
+        .input-send {
+            width: 80px;
+            height: 36px;
+            background-color: var(--wechat-green);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 15px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+        
+        .input-send.active {
+            opacity: 1;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--wechat-light-text);
+        }
+        
+        .modal-body {
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--wechat-text);
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--wechat-dark-gray);
+            border-radius: 5px;
+            font-size: 15px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--wechat-green);
+            outline: none;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--wechat-dark-gray);
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .btn {
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-secondary {
+            background-color: var(--wechat-gray);
+            color: var(--wechat-text);
+            margin-right: 10px;
+        }
+        
+        .btn-primary {
+            background-color: var(--wechat-green);
+            color: white;
+        }
+        
+        /* 朋友圈样式 */
+        .moments-container {
+            flex: 1;
+            background-color: white;
+            overflow-y: auto;
+            padding: 15px;
+            display: none;
+        }
+        
+        .moments-container.active {
+            display: block;
+        }
+        
+        .moment-card {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+        }
+        
+        .moment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .moment-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background-color: var(--wechat-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .moment-user {
+            flex: 1;
+        }
+        
+        .moment-name {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        
+        .moment-time {
+            color: var(--wechat-light-text);
+            font-size: 13px;
+        }
+        
+        .moment-content {
+            margin-bottom: 15px;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .moment-images {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .moment-image {
+            aspect-ratio: 1/1;
+            background-color: var(--wechat-gray);
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--wechat-light-text);
+        }
+        
+        .moment-actions {
+            display: flex;
+            color: var(--wechat-light-text);
+            font-size: 14px;
+        }
+        
+        .moment-action {
+            margin-right: 20px;
+            cursor: pointer;
+        }
+        
+        .moment-action i {
+            margin-right: 5px;
+        }
+        
+        .moment-comments {
+            margin-top: 10px;
+            background-color: var(--wechat-gray);
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .comment {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .comment:last-child {
+            margin-bottom: 0;
+        }
+        
+        .comment-name {
+            font-weight: 500;
+            color: #576B95;
+        }
+        
+        /* 设置页面 */
+        .settings-container {
+            flex: 1;
+            background-color: white;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .settings-container.active {
+            display: block;
+        }
+        
+        .settings-section {
+            padding: 15px;
+            border-bottom: 1px solid var(--wechat-dark-gray);
+        }
+        
+        .settings-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--wechat-gray);
+        }
+        
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+        
+        .settings-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--wechat-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-right: 15px;
+        }
+        
+        .settings-info {
+            flex: 1;
+        }
+        
+        .settings-name {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+        
+        .settings-desc {
+            color: var(--wechat-light-text);
+            font-size: 14px;
+        }
+        
+        .settings-arrow {
+            color: var(--wechat-light-text);
+            font-size: 18px;
+        }
+        
+        /* API配置模态框特定样式 */
+        #apiConfigModal .form-group {
+            margin-bottom: 25px;
+        }
+        
+        #apiConfigModal .form-text {
+            color: #6c757d;
+            font-size: 12px;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        #apiConfigModal .d-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        #contextValue {
+            font-weight: bold;
+            font-size: 16px;
+            color: #07C160;
+        }
+        
+        .provider-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .provider-deepseek {
+            background-color: #6c5ce7;
+            color: white;
+        }
+
+        .provider-minimax {
+            background-color: #00b894;
+            color: white;
+        }
+
+        .provider-openai {
+            background-color: #10a37f;
+            color: white;
+        }
+
+        .provider-claude {
+            background-color: #ff6b35;
+            color: white;
+        }
+
+        .provider-gemini {
+            background-color: #4285f4;
+            color: white;
+        }
+
+        .provider-zhipu {
+            background-color: #1890ff;
+            color: white;
+        }
+
+        .provider-moonshot {
+            background-color: #722ed1;
+            color: white;
+        }
+
+        .provider-yi {
+            background-color: #52c41a;
+            color: white;
+        }
+
+        .provider-baidu {
+            background-color: #2932e1;
+            color: white;
+        }
+
+        .provider-alibaba {
+            background-color: #ff6a00;
+            color: white;
+        }
+
+        .provider-tencent {
+            background-color: #00d4aa;
+            color: white;
+        }
+
+        .provider-xunfei {
+            background-color: #fa541c;
+            color: white;
+        }
+
+        .model-recommended {
+            background-color: #52c41a;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        .model-popular {
+            background-color: #1890ff;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        .model-latest {
+            background-color: #722ed1;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 8px;
+        }
+
+        /* API密钥输入框样式 */
+        .api-key-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .api-key-input-wrapper .form-control {
+            padding-right: 45px;
+        }
+
+        .api-key-toggle {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--wechat-light-text);
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: color 0.3s;
+        }
+
+        .api-key-toggle:hover {
+            color: var(--wechat-text);
+            background-color: var(--wechat-gray);
+        }
+
+        .api-key-toggle i {
+            font-size: 16px;
+        }
+
+        /* 用户头像预览样式 */
+        .user-avatar-preview {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--wechat-gray);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .preview-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background-color: var(--wechat-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .preview-info {
+            flex: 1;
+        }
+
+        .preview-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .preview-bio {
+            color: var(--wechat-light-text);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .chat-list {
+                width: 100%;
+                display: block;
+            }
+            
+            .chat-container {
+                display: none;
+            }
+            
+            .chat-header-back {
+                display: block;
+            }
+            
+            .chat-container.active {
+                display: flex;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 100;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 左侧导航 -->
+        <div class="sidebar">
+            <div class="sidebar-top">
+                <div class="nav-item active" data-view="chats" title="微信">
+                    <!-- 微信气泡图标SVG，仿微信桌面 -->
+                    <svg width="32" height="32" viewBox="0 0 32 32">
+                        <ellipse cx="16" cy="15" rx="13" ry="11" fill="#07C160"/>
+                        <ellipse cx="23" cy="23" rx="7" ry="6" fill="#07C160"/>
+                        <ellipse cx="16" cy="15" rx="12" ry="10" fill="#fff"/>
+                        <ellipse cx="23" cy="23" rx="6" ry="5" fill="#fff"/>
+                    </svg>
+                </div>
+                <div class="nav-item" data-view="moments" title="朋友圈">
+                    <i class="fas fa-camera-retro"></i>
+                </div>
+            </div>
+            <div class="sidebar-bottom">
+                <div class="nav-item" data-view="settings" title="设置">
+                    <!-- 三横菜单SVG -->
+                    <svg width="28" height="28" viewBox="0 0 28 28">
+                        <rect x="3" y="7" width="25" height="2" rx="1" fill="#fff" opacity="0.7"/>
+                        <rect x="3" y="15" width="25" height="2" rx="1" fill="#fff" opacity="0.7"/>
+                        <rect x="3" y="23" width="25" height="2" rx="1" fill="#fff" opacity="0.7"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 聊天列表 -->
+        <div class="chat-list">
+            <div class="list-header">
+                <h2>聊天</h2>
+                <div class="list-header-actions">
+                    <i class="fas fa-user-plus" id="addContact"></i>
+                    <i class="fas fa-edit" id="newChat"></i>
+                </div>
+            </div>
+            <div class="search-box">
+                <input type="text" placeholder="搜索">
+            </div>
+            <div class="chat-items" id="chatList">
+                <!-- 聊天列表动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 聊天主界面 -->
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <div class="chat-header-back" id="backToChatList">
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="chat-header-avatar">A</div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name">AI 助手</div>
+                    <div class="chat-header-status">在线</div>
+                </div>
+                <div class="chat-header-actions">
+                    <i class="fas fa-phone-alt"></i>
+                    <i class="fas fa-video"></i>
+                    <i class="fas fa-info-circle"></i>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <!-- 消息动态生成 -->
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="input-tools">
+                    <div class="tool-item">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <div class="tool-item">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="tool-item">
+                        <i class="fas fa-paperclip"></i>
+                    </div>
+                    <!-- 新增清除聊天按钮 -->
+                    <div class="tool-item" id="clearChatBtn" title="清除聊天记录">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                </div>
+                <div class="input-box">
+                    <textarea placeholder="输入消息..." id="messageInput"></textarea>
+                    <button class="input-send" id="sendMessage">发送</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 朋友圈界面 -->
+        <div class="moments-container" id="momentsContainer">
+            <!-- 朋友圈内容动态生成 -->
+        </div>
+        
+        <!-- 设置界面 -->
+        <div class="settings-container" id="settingsContainer">
+            <div class="settings-section">
+                <div class="settings-title">账号设置</div>
+                <div class="settings-item" id="userInfoItem">
+                    <div class="settings-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">用户信息</div>
+                        <div class="settings-desc">修改昵称、头像和简介</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">AI设置</div>
+                <div class="settings-item">
+                    <div class="settings-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">角色管理</div>
+                        <div class="settings-desc">创建和管理AI角色</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="settings-item" id="apiConfigItem">
+                    <div class="settings-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">API配置</div>
+                        <div class="settings-desc">设置AI API密钥</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-icon">
+                        <i class="fas fa-sliders-h"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">AI行为设置</div>
+                        <div class="settings-desc">调整上下文长度和回复延迟</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">界面设置</div>
+                <div class="settings-item">
+                    <div class="settings-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">主题与外观</div>
+                        <div class="settings-desc">自定义颜色、背景和字体</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-section">
+                <div class="settings-title">数据管理</div>
+                <div class="settings-item">
+                    <div class="settings-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">导出数据</div>
+                        <div class="settings-desc">导出聊天记录和设置</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <div class="settings-item">
+                    <div class="settings-icon">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                    <div class="settings-info">
+                        <div class="settings-name">清除数据</div>
+                        <div class="settings-desc">重置应用并清除所有数据</div>
+                    </div>
+                    <div class="settings-arrow">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加角色模态框 -->
+    <div class="modal" id="addRoleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">角色编辑</div>
+                <div class="modal-close">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="roleName">角色名称</label>
+                    <input type="text" class="form-control" id="roleName" placeholder="输入角色名称">
+                </div>
+                <div class="form-group">
+                    <label for="roleAvatar">头像</label>
+                    <input type="file" class="form-control" id="roleAvatar">
+                </div>
+                <div class="form-group">
+                    <label for="rolePrompt">角色描述 (Prompt)</label>
+                    <textarea class="form-control" id="rolePrompt" rows="6" placeholder="详细描述角色性格、背景和行为特点..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">取消</button>
+                <button class="btn btn-primary" id="saveRole">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 发布朋友圈模态框 -->
+    <div class="modal" id="postMomentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">发布朋友圈</div>
+                <div class="modal-close">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <textarea class="form-control" id="momentContent" rows="4" placeholder="分享你的想法..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="momentImages">添加图片 (最多9张)</label>
+                    <input type="file" class="form-control" id="momentImages" multiple>
+                </div>
+                <div class="form-group">
+                    <label>可见范围</label>
+                    <div id="roleSelection">
+                        <!-- 角色选择器动态生成 -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">取消</button>
+                <button class="btn btn-primary" id="postMoment">发布</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 用户信息编辑模态框 -->
+    <div class="modal" id="userInfoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">用户信息编辑</div>
+                <div class="modal-close">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="userName">用户昵称</label>
+                    <input type="text" class="form-control" id="userName" placeholder="输入您的昵称">
+                </div>
+                <div class="form-group">
+                    <label for="userAvatar">头像</label>
+                    <input type="file" class="form-control" id="userAvatar" accept="image/*">
+                    <small class="form-text text-muted">支持JPG、PNG格式，建议尺寸1:1</small>
+                </div>
+                <div class="form-group">
+                    <label for="userBio">个人简介</label>
+                    <textarea class="form-control" id="userBio" rows="4" placeholder="介绍一下您自己..."></textarea>
+                    <small class="form-text text-muted">这些信息将帮助AI更好地了解您</small>
+                </div>
+                <div class="form-group">
+                    <label>当前头像预览</label>
+                    <div class="user-avatar-preview" id="userAvatarPreview">
+                        <div class="preview-avatar">U</div>
+                        <div class="preview-info">
+                            <div class="preview-name">用户</div>
+                            <div class="preview-bio">AI角色扮演爱好者</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close">取消</button>
+                <button class="btn btn-primary" id="saveUserInfo">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API配置模态框 -->
+    <div class="modal" id="apiConfigModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">API配置</div>
+                <div class="modal-close">&times;</div>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="apiProvider">API提供商</label>
+                    <select class="form-control" id="apiProvider">
+                        <option value="openai">OpenAI</option>
+                        <option value="claude">Anthropic Claude</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="zhipu">智谱AI (ChatGLM)</option>
+                        <option value="moonshot">月之暗面 (Kimi)</option>
+                        <option value="yi">零一万物 (Yi)</option>
+                        <option value="baidu">百度文心一言</option>
+                        <option value="alibaba">阿里通义千问</option>
+                        <option value="tencent">腾讯混元</option>
+                        <option value="xunfei">讯飞星火</option>
+                        <option value="minimax">MiniMax</option>
+                        <option value="custom">自定义API</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="apiKey">API密钥</label>
+                    <div class="api-key-input-wrapper">
+                        <input type="password" class="form-control" id="apiKey" placeholder="输入API密钥">
+                        <button type="button" class="api-key-toggle" id="toggleApiKey" title="显示/隐藏密钥">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <small class="form-text text-muted" id="apiKeyHelp"></small>
+                </div>
+                <div class="form-group">
+                    <label for="apiEndpoint">API端点</label>
+                    <input type="text" class="form-control" id="apiEndpoint" placeholder="https://api.example.com/v1/chat/completions">
+                    <small class="form-text text-muted" id="endpointHelp"></small>
+                </div>
+                <div class="form-group">
+                    <label for="aiModel">AI模型</label>
+                    <select class="form-control" id="aiModel">
+                        <!-- 模型选项将根据提供商动态更新 -->
+                    </select>
+                    <small class="form-text text-muted" id="modelHelp"></small>
+                </div>
+                <div class="form-group">
+                    <label for="contextLength">上下文长度</label>
+                    <input type="range" class="form-control-range" id="contextLength" min="1" max="20" value="5">
+                    <div class="d-flex">
+                        <small>短</small>
+                        <span id="contextValue">5</span> 轮对话
+                        <small>长</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="responseDelay">响应延迟模拟 (毫秒)</label>
+                    <input type="number" class="form-control" id="responseDelay" value="1000">
+                </div>
+                <div class="form-group">
+                    <label for="temperature">温度 (0-1)</label>
+                    <input type="number" class="form-control" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="testApiConnection">测试连接</button>
+                <button class="btn btn-primary" id="saveApiConfig">保存配置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 应用状态管理
+        const appState = {
+            currentView: 'chats',
+            currentChat: null,
+            user: {
+                name: '用户',
+                avatar: '用',
+                bio: '我是一个AI角色扮演爱好者，喜欢与不同的AI角色进行有趣的对话。'
+            },
+            roles: [
+                {
+                    id: 'ai-assistant',
+                    name: 'AI助手',
+                    avatar: 'A',
+                    prompt: '一个乐于助人的AI助手，知识丰富，善于解答各种问题，语气友好而专业。'
+                },
+                {
+                    id: 'history-teacher',
+                    name: '历史老师',
+                    avatar: 'H',
+                    prompt: '一位资深历史老师，对世界历史了如指掌，喜欢用故事的方式讲述历史事件，语气温和而富有启发性。'
+                },
+                {
+                    id: 'sci-fi-nerd',
+                    name: '科幻迷',
+                    avatar: 'S',
+                    prompt: '一个狂热的科幻爱好者，熟悉各种科幻作品和理论，喜欢讨论未来科技和外星文明，语气充满热情。'
+                }
+            ],
+            chats: [
+                {
+                    id: 'chat-ai',
+                    roleId: 'ai-assistant',
+                    name: 'AI助手',
+                    lastMessage: '你好！有什么我可以帮助你的吗？',
+                    lastTime: '12:30',
+                    unread: 0,
+                    messages: [
+                        {
+                            id: 'm1',
+                            sender: 'ai',
+                            content: '你好！有什么我可以帮助你的吗？',
+                            time: '12:30'
+                        }
+                    ]
+                },
+                {
+                    id: 'chat-history',
+                    roleId: 'history-teacher',
+                    name: '历史老师',
+                    lastMessage: '你对哪个历史时期最感兴趣？',
+                    lastTime: '昨天',
+                    unread: 2,
+                    messages: [
+                        {
+                            id: 'm1',
+                            sender: 'ai',
+                            content: '你好，我是历史老师。你对哪个历史时期最感兴趣？',
+                            time: '昨天 15:45'
+                        }
+                    ]
+                },
+                {
+                    id: 'chat-sci-fi',
+                    roleId: 'sci-fi-nerd',
+                    name: '科幻迷',
+                    lastMessage: '你相信外星生命存在吗？',
+                    lastTime: '星期三',
+                    unread: 0,
+                    messages: [
+                        {
+                            id: 'm1',
+                            sender: 'ai',
+                            content: '嗨！我是科幻迷。你相信外星生命存在吗？',
+                            time: '星期三 10:22'
+                        }
+                    ]
+                }
+            ],
+            moments: [
+                {
+                    id: 'm1',
+                    roleId: 'ai-assistant',
+                    name: 'AI助手',
+                    time: '1小时前',
+                    content: '今天学习了很多新知识！如果你有任何问题，随时来问我。',
+                    images: [],
+                    likes: ['历史老师', '科幻迷'],
+                    comments: [
+                        {
+                            name: '历史老师',
+                            content: '太棒了！我也有很多历史知识可以分享。'
+                        },
+                        {
+                            name: '科幻迷',
+                            content: '能帮我解答一些科幻理论问题吗？'
+                        }
+                    ]
+                },
+                {
+                    id: 'm2',
+                    roleId: 'history-teacher',
+                    name: '历史老师',
+                    time: '3小时前',
+                    content: '刚刚读完了关于罗马帝国的书籍，真是令人着迷的文明！',
+                    images: ['book1', 'book2'],
+                    likes: ['AI助手'],
+                    comments: [
+                        {
+                            name: 'AI助手',
+                            content: '罗马帝国的兴衰确实有很多值得研究的方面！'
+                        }
+                    ]
+                }
+            ],
+            // API配置
+            apiConfig: {
+                provider: 'deepseek', // 默认设为DeepSeek
+                apiKey: '',
+                endpoint: 'https://api.deepseek.com/v1/chat/completions',
+                model: 'deepseek-chat',
+                contextLength: 5,
+                responseDelay: 1000,
+                temperature: 0.7
+            }
+        };
+        
+        // 定义不同API提供商的模型列表
+        const apiModels = {
+            openai: [
+                { id: 'gpt-4o', name: 'GPT-4o', tag: 'recommended', desc: '最新多模态模型，性能优异' },
+                { id: 'gpt-4o-mini', name: 'GPT-4o Mini', tag: 'popular', desc: '轻量版本，性价比高' },
+                { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', tag: '', desc: '高性能模型' },
+                { id: 'gpt-4', name: 'GPT-4', tag: '', desc: '经典版本' },
+                { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', tag: '', desc: '快速响应' }
+            ],
+            claude: [
+                { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', tag: 'recommended', desc: '最新版本，推理能力强' },
+                { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku', tag: 'latest', desc: '最新快速版本' },
+                { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', tag: 'popular', desc: '最强性能版本' },
+                { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', tag: '', desc: '平衡版本' },
+                { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', tag: '', desc: '快速响应版本' }
+            ],
+            gemini: [
+                { id: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash', tag: 'latest', desc: '最新实验版本，速度极快' },
+                { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro', tag: 'recommended', desc: '推荐版本，支持长上下文' },
+                { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash', tag: 'popular', desc: '快速版本，性价比高' },
+                { id: 'gemini-pro', name: 'Gemini Pro', tag: '', desc: '经典版本' }
+            ],
+            deepseek: [
+                { id: 'deepseek-chat', name: 'DeepSeek Chat', tag: 'recommended', desc: '通用对话模型' },
+                { id: 'deepseek-coder', name: 'DeepSeek Coder', tag: 'popular', desc: '专业编程模型' }
+            ],
+            zhipu: [
+                { id: 'glm-4-plus', name: 'GLM-4 Plus', tag: 'recommended', desc: '最新增强版本' },
+                { id: 'glm-4-0520', name: 'GLM-4', tag: 'popular', desc: '标准版本' },
+                { id: 'glm-4-air', name: 'GLM-4 Air', tag: '', desc: '轻量版本' },
+                { id: 'glm-4-airx', name: 'GLM-4 AirX', tag: '', desc: '超轻量版本' },
+                { id: 'glm-4-flash', name: 'GLM-4 Flash', tag: '', desc: '快速版本' }
+            ],
+            moonshot: [
+                { id: 'moonshot-v1-128k', name: 'Moonshot v1 128K', tag: 'recommended', desc: '长上下文版本' },
+                { id: 'moonshot-v1-32k', name: 'Moonshot v1 32K', tag: 'popular', desc: '标准版本' },
+                { id: 'moonshot-v1-8k', name: 'Moonshot v1 8K', tag: '', desc: '基础版本' }
+            ],
+            yi: [
+                { id: 'yi-large', name: 'Yi Large', tag: 'recommended', desc: '大型模型，性能强劲' },
+                { id: 'yi-medium', name: 'Yi Medium', tag: 'popular', desc: '中型模型，平衡性能' },
+                { id: 'yi-vision', name: 'Yi Vision', tag: 'latest', desc: '多模态模型' }
+            ],
+            baidu: [
+                { id: 'ernie-4.0-8k', name: '文心一言 4.0', tag: 'recommended', desc: '最新版本' },
+                { id: 'ernie-3.5-8k', name: '文心一言 3.5', tag: 'popular', desc: '经典版本' },
+                { id: 'ernie-speed-8k', name: '文心一言 Speed', tag: '', desc: '快速版本' }
+            ],
+            alibaba: [
+                { id: 'qwen-plus', name: '通义千问 Plus', tag: 'recommended', desc: '增强版本' },
+                { id: 'qwen-turbo', name: '通义千问 Turbo', tag: 'popular', desc: '快速版本' },
+                { id: 'qwen-max', name: '通义千问 Max', tag: 'latest', desc: '最大版本' }
+            ],
+            tencent: [
+                { id: 'hunyuan-pro', name: '混元 Pro', tag: 'recommended', desc: '专业版本' },
+                { id: 'hunyuan-standard', name: '混元标准版', tag: 'popular', desc: '标准版本' },
+                { id: 'hunyuan-lite', name: '混元轻量版', tag: '', desc: '轻量版本' }
+            ],
+            xunfei: [
+                { id: 'spark-max', name: '星火 Max', tag: 'recommended', desc: '最大版本' },
+                { id: 'spark-pro', name: '星火 Pro', tag: 'popular', desc: '专业版本' },
+                { id: 'spark-lite', name: '星火 Lite', tag: '', desc: '轻量版本' }
+            ],
+            minimax: [
+                { id: 'abab6.5s-chat', name: 'abab6.5s', tag: 'recommended', desc: '最新版本' },
+                { id: 'abab6.5-chat', name: 'abab6.5', tag: 'popular', desc: '标准版本' },
+                { id: 'abab5.5-chat', name: 'abab5.5', tag: '', desc: '经典版本' }
+            ],
+            custom: [
+                { id: 'custom-model', name: '自定义模型', tag: '', desc: '请配置您的自定义模型' }
+            ]
+        };
+        
+        // 定义不同API提供商的默认端点和帮助文本
+        const apiEndpoints = {
+            openai: {
+                endpoint: 'https://api.openai.com/v1/chat/completions',
+                help: 'OpenAI官方API端点，需要API Key'
+            },
+            claude: {
+                endpoint: 'https://api.anthropic.com/v1/messages',
+                help: 'Anthropic Claude官方API端点'
+            },
+            gemini: {
+                endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent',
+                help: 'Google Gemini官方API端点，需要替换{model}为具体模型名'
+            },
+            deepseek: {
+                endpoint: 'https://api.deepseek.com/v1/chat/completions',
+                help: 'DeepSeek官方API端点，性价比高'
+            },
+            zhipu: {
+                endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+                help: '智谱AI官方API端点'
+            },
+            moonshot: {
+                endpoint: 'https://api.moonshot.cn/v1/chat/completions',
+                help: '月之暗面Kimi官方API端点'
+            },
+            yi: {
+                endpoint: 'https://api.lingyiwanwu.com/v1/chat/completions',
+                help: '零一万物Yi官方API端点'
+            },
+            baidu: {
+                endpoint: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat',
+                help: '百度文心一言API端点，需要Access Token'
+            },
+            alibaba: {
+                endpoint: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation',
+                help: '阿里通义千问API端点'
+            },
+            tencent: {
+                endpoint: 'https://hunyuan.tencentcloudapi.com',
+                help: '腾讯混元API端点'
+            },
+            xunfei: {
+                endpoint: 'https://spark-api-open.xf-yun.com/v1/chat/completions',
+                help: '讯飞星火API端点'
+            },
+            minimax: {
+                endpoint: 'https://api.minimax.chat/v1/text/chatcompletion_v2',
+                help: 'MiniMax官方API端点'
+            },
+            custom: {
+                endpoint: '',
+                help: '请输入您的自定义API端点地址'
+            }
+        };
+        
+        // DOM元素引用
+        const dom = {
+            chatList: document.getElementById('chatList'),
+            chatContainer: document.getElementById('chatContainer'),
+            chatMessages: document.getElementById('chatMessages'),
+            messageInput: document.getElementById('messageInput'),
+            sendMessage: document.getElementById('sendMessage'),
+            backToChatList: document.getElementById('backToChatList'),
+            momentsContainer: document.getElementById('momentsContainer'),
+            settingsContainer: document.getElementById('settingsContainer'),
+            addRoleModal: document.getElementById('addRoleModal'),
+            postMomentModal: document.getElementById('postMomentModal'),
+            apiConfigModal: document.getElementById('apiConfigModal'),
+            roleSelection: document.getElementById('roleSelection'),
+            saveRole: document.getElementById('saveRole'),
+            postMoment: document.getElementById('postMoment')
+        };
+        
+        // 初始化应用
+        function initApp() {
+            // 加载保存的数据
+            loadData();
+            
+            // 渲染聊天列表
+            renderChatList();
+            
+            // 渲染朋友圈
+            renderMoments();
+            
+            // 设置事件监听器
+            setupEventListeners();
+            
+            // 设置当前视图
+            setCurrentView('chats');
+        }
+        
+        // 加载数据
+        function loadData() {
+            const savedData = localStorage.getItem('aiRoleplayData');
+            if (savedData) {
+                const parsedData = JSON.parse(savedData);
+                
+                // 保留API配置默认值
+                if (!parsedData.apiConfig) {
+                    parsedData.apiConfig = appState.apiConfig;
+                }
+                
+                Object.assign(appState, parsedData);
+            }
+        }
+        
+        // 保存数据
+        function saveData() {
+            localStorage.setItem('aiRoleplayData', JSON.stringify(appState));
+        }
+        
+        // 设置当前视图
+        function setCurrentView(view) {
+            appState.currentView = view;
+
+            // 更新导航项激活状态
+            document.querySelectorAll('.nav-item').forEach(item => {
+                if (item.dataset.view === view) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            // 聊天列表
+            if (view === 'chats') {
+                dom.chatList.style.display = 'flex';
+                dom.chatContainer.style.display = '';
+                dom.momentsContainer.style.display = 'none';
+                dom.settingsContainer.style.display = 'none';
+                dom.momentsContainer.classList.remove('active');
+                dom.settingsContainer.classList.remove('active');
+                bindChatHeaderEditEvent(); // 保证聊天头部事件
+            }
+            // 朋友圈
+            else if (view === 'moments') {
+                dom.chatList.style.display = 'none';
+                dom.chatContainer.style.display = 'none';
+                dom.momentsContainer.style.display = 'block';
+                dom.settingsContainer.style.display = 'none';
+                dom.momentsContainer.classList.add('active');
+                dom.settingsContainer.classList.remove('active');
+            }
+            // 设置
+            else if (view === 'settings') {
+                dom.chatList.style.display = 'none';
+                dom.chatContainer.style.display = 'none';
+                dom.momentsContainer.style.display = 'none';
+                dom.settingsContainer.style.display = 'block';
+                dom.momentsContainer.classList.remove('active');
+                dom.settingsContainer.classList.add('active');
+                bindSettingsItemEvents(); // 关键：每次切换到设置页都重新绑定
+            }
+        }
+        
+        // 渲染聊天列表
+        function renderChatList() {
+            dom.chatList.innerHTML = '';
+
+            appState.chats.forEach(chat => {
+                const role = appState.roles.find(r => r.id === chat.roleId);
+
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item';
+                chatItem.dataset.chatId = chat.id;
+
+                // 判断avatar是否为图片
+                let avatarHtml = '';
+                if (role.avatar && role.avatar.startsWith('data:image')) {
+                    avatarHtml = `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;" />`;
+                } else {
+                    avatarHtml = role.avatar;
+                }
+
+                chatItem.innerHTML = `
+                    <div class="chat-avatar">${avatarHtml}</div>
+                    <div class="chat-info">
+                        <div class="chat-top">
+                            <div class="chat-name">${chat.name}</div>
+                            <div class="chat-time">${chat.lastTime}</div>
+                        </div>
+                        <div class="chat-preview">${chat.lastMessage}</div>
+                    </div>
+                `;
+
+                if (chat.unread > 0) {
+                    const unreadBadge = document.createElement('div');
+                    unreadBadge.className = 'unread-badge';
+                    unreadBadge.textContent = chat.unread;
+                    chatItem.appendChild(unreadBadge);
+                }
+
+                chatItem.addEventListener('click', () => {
+                    openChat(chat.id);
+                });
+
+                dom.chatList.appendChild(chatItem);
+            });
+        }
+        
+        // 打开聊天
+        function openChat(chatId) {
+            const chat = appState.chats.find(c => c.id === chatId);
+            if (!chat) return;
+
+            appState.currentChat = chatId;
+
+            // 更新聊天头部
+            const role = appState.roles.find(r => r.id === chat.roleId);
+            const avatarDiv = document.querySelector('.chat-header-avatar');
+            if (role.avatar && role.avatar.startsWith('data:image')) {
+                avatarDiv.innerHTML = `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" />`;
+            } else {
+                avatarDiv.textContent = role.avatar;
+            }
+            document.querySelector('.chat-header-name').textContent = chat.name;
+
+            // 渲染消息
+            renderMessages(chat.messages);
+            
+            // 标记为已读
+            chat.unread = 0;
+            saveData();
+            renderChatList();
+            
+            // 在移动端显示聊天界面
+            if (window.innerWidth < 768) {
+                dom.chatList.style.display = 'none';
+                dom.chatContainer.classList.add('active');
+            }
+
+            // 关键：每次打开聊天都重新绑定头像编辑事件
+            bindChatHeaderEditEvent();
+            bindClearChatBtnEvent(); // 新增：每次打开聊天都重新绑定
+        }
+        
+        // 渲染消息
+        function renderMessages(messages) {
+            dom.chatMessages.innerHTML = '';
+
+            messages.forEach(msg => {
+                const isSelf = msg.sender === 'user';
+                const role = isSelf ? appState.user : appState.roles.find(r => r.id === appState.chats.find(c => c.id === appState.currentChat).roleId);
+
+                const messageRow = document.createElement('div');
+                messageRow.className = `message-row ${isSelf ? 'self' : ''}`;
+
+                let avatarHtml = '';
+                if (role.avatar && role.avatar.startsWith('data:image')) {
+                    avatarHtml = `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:6px;" />`;
+                } else {
+                    avatarHtml = role.avatar;
+                }
+
+                messageRow.innerHTML = `
+                    <div class="message-avatar">${avatarHtml}</div>
+                    <div class="message-bubble">
+                        <div class="message-content">${msg.content}</div>
+                        <div class="message-time">${msg.time}</div>
+                    </div>
+                `;
+
+                dom.chatMessages.appendChild(messageRow);
+            });
+
+            // 滚动到底部
+            dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+        }
+        
+        // 渲染朋友圈
+        function renderMoments() {
+            dom.momentsContainer.innerHTML = '';
+            
+            appState.moments.forEach(moment => {
+                const role = appState.roles.find(r => r.id === moment.roleId);
+                
+                const momentCard = document.createElement('div');
+                momentCard.className = 'moment-card';
+                momentCard.innerHTML = `
+                    <div class="moment-header">
+                        <div class="moment-avatar">${role.avatar}</div>
+                        <div class="moment-user">
+                            <div class="moment-name">${moment.name}</div>
+                            <div class="moment-time">${moment.time}</div>
+                        </div>
+                    </div>
+                    <div class="moment-content">${moment.content}</div>
+                    ${moment.images.length > 0 ? `
+                    <div class="moment-images">
+                        ${moment.images.slice(0, 3).map(img => `
+                            <div class="moment-image">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        `).join('')}
+                        ${moment.images.length > 3 ? `<div class="moment-image">+${moment.images.length - 3}</div>` : ''}
+                    </div>
+                    ` : ''}
+                    <div class="moment-actions">
+                        <div class="moment-action">
+                            <i class="fas fa-thumbs-up"></i> ${moment.likes.length}
+                        </div>
+                        <div class="moment-action">
+                            <i class="fas fa-comment"></i> ${moment.comments.length}
+                        </div>
+                    </div>
+                    ${moment.comments.length > 0 ? `
+                    <div class="moment-comments">
+                        ${moment.comments.map(comment => `
+                            <div class="comment">
+                                <span class="comment-name">${comment.name}</span>: ${comment.content}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                `;
+                
+                dom.momentsContainer.appendChild(momentCard);
+            });
+            
+            // 添加发布按钮
+            const postButton = document.createElement('div');
+            postButton.className = 'moment-card';
+            postButton.innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <button class="btn btn-primary" id="newMomentBtn" style="width: 100%;">
+                        <i class="fas fa-plus"></i> 发布新动态
+                    </button>
+                </div>
+            `;
+            dom.momentsContainer.appendChild(postButton);
+            
+            document.getElementById('newMomentBtn').addEventListener('click', () => {
+                openPostMomentModal();
+            });
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 导航切换
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    setCurrentView(item.dataset.view);
+                });
+            });
+
+            // 返回聊天列表（移动端）
+            dom.backToChatList.addEventListener('click', () => {
+                dom.chatContainer.classList.remove('active');
+                dom.chatList.style.display = 'flex';
+            });
+
+            // 发送消息
+            dom.sendMessage.addEventListener('click', sendMessage);
+            dom.messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // 输入框内容变化
+            dom.messageInput.addEventListener('input', () => {
+                if (dom.messageInput.value.trim() !== '') {
+                    dom.sendMessage.classList.add('active');
+                } else {
+                    dom.sendMessage.classList.remove('active');
+                }
+            });
+
+            // 添加角色
+            document.getElementById('addContact').addEventListener('click', () => {
+                document.getElementById('addRoleModal').classList.add('active');
+            });
+
+            // 新建聊天
+            document.getElementById('newChat').addEventListener('click', () => {
+                document.getElementById('addRoleModal').classList.add('active');
+            });
+
+            // 设置页面各项点击事件
+            bindSettingsItemEvents();
+
+            // 模态框关闭
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.classList.remove('active');
+                    });
+                });
+            });
+
+            // 保存角色
+            dom.saveRole.addEventListener('click', saveNewRole);
+
+            // 发布动态
+            dom.postMoment.addEventListener('click', postNewMoment);
+
+            // API相关事件监听器将在模态框打开时绑定
+
+            // 清除聊天按钮
+            bindClearChatBtnEvent();
+        }
+        
+        // 绑定头像编辑事件：每次 openChat 后都重新绑定
+        function bindChatHeaderEditEvent() {
+            const header = document.querySelector('.chat-header');
+            if (!header) return;
+            // 先解绑，防止重复绑定
+            header.onclick = null;
+            header.onclick = function (e) {
+                // 避免点击 header 内部按钮（如电话、视频、info）也弹窗
+                if (e.target.closest('.chat-header-actions')) return;
+
+                const chat = appState.chats.find(c => c.id === appState.currentChat);
+                if (!chat) return;
+                const role = appState.roles.find(r => r.id === chat.roleId);
+                if (!role) return;
+                document.getElementById('roleName').value = role.name;
+                document.getElementById('rolePrompt').value = role.prompt;
+                document.getElementById('roleAvatar').value = '';
+                document.getElementById('saveRole').dataset.editRoleId = role.id;
+                document.getElementById('addRoleModal').classList.add('active');
+                bindModalCloseEvents(); // 保证弹窗可关闭
+            };
+        }
+
+        // 绑定设置项点击事件（每次切换到设置页面都重新绑定）
+        function bindSettingsItemEvents() {
+            document.querySelectorAll('.settings-item').forEach(item => {
+                item.onclick = null; // 先解绑
+                const name = item.querySelector('.settings-name')?.textContent?.trim();
+                if (name === 'API配置') {
+                    item.onclick = function() {
+                        loadApiConfigToModal();
+                        document.getElementById('apiConfigModal').classList.add('active');
+                        bindModalCloseEvents(); // 保证弹窗可关闭
+                    };
+                } else if (name === '用户信息') {
+                    item.onclick = function() {
+                        loadUserInfoToModal();
+                        document.getElementById('userInfoModal').classList.add('active');
+                        bindModalCloseEvents(); // 保证弹窗可关闭
+                    };
+                } else if (name === '角色管理') {
+                    // item.onclick = openRoleManageModal;
+                }
+                // 其他设置项...
+            });
+        }
+
+        // 保证每次弹窗关闭都能生效
+        function bindModalCloseEvents() {
+            document.querySelectorAll('.modal-close, .btn.btn-secondary.modal-close').forEach(btn => {
+                btn.onclick = function () {
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.classList.remove('active');
+                    });
+                };
+            });
+        }
+
+        // 替换 sendMessage 和 generateAIResponse，加入真实API调用（以 DeepSeek/OpenAI 为例）
+
+        async function sendMessage() {
+            const message = dom.messageInput.value.trim();
+            if (message === '' || !appState.currentChat) return;
+
+            // 获取当前聊天
+            const chat = appState.chats.find(c => c.id === appState.currentChat);
+            if (!chat) return;
+
+            // 添加用户消息
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+            const userMessage = {
+                id: `msg-${Date.now()}`,
+                sender: 'user',
+                content: message,
+                time: timeStr
+            };
+
+            chat.messages.push(userMessage);
+
+            // 更新UI
+            renderMessages(chat.messages);
+            dom.messageInput.value = '';
+            dom.sendMessage.classList.remove('active');
+
+            // 显示打字指示器
+            showTypingIndicator && showTypingIndicator();
+
+            // 真实API调用
+            try {
+                const aiContent = await generateAIResponse(message, chat.roleId, chat.messages);
+                // 移除打字指示器
+                hideTypingIndicator && hideTypingIndicator();
+
+                const aiMessage = {
+                    id: `msg-${Date.now()}`,
+                    sender: 'ai',
+                    content: aiContent,
+                    time: `${now.getHours()}:${(now.getMinutes() + 1).toString().padStart(2, '0')}`
+                };
+
+                chat.messages.push(aiMessage);
+                renderMessages(chat.messages);
+                saveData();
+            } catch (err) {
+                hideTypingIndicator && hideTypingIndicator();
+                const aiMessage = {
+                    id: `msg-${Date.now()}`,
+                    sender: 'ai',
+                    content: 'AI回复失败，请检查API配置。',
+                    time: `${now.getHours()}:${(now.getMinutes() + 1).toString().padStart(2, '0')}`
+                };
+                chat.messages.push(aiMessage);
+                renderMessages(chat.messages);
+                saveData();
+            }
+
+            // 更新聊天列表
+            chat.lastMessage = message;
+            chat.lastTime = '刚刚';
+            saveData();
+            renderChatList();
+        }
+
+        // 真实AI回复（支持多个API提供商）
+        async function generateAIResponse(message, roleId, messages) {
+            const config = appState.apiConfig;
+            const role = appState.roles.find(r => r.id === roleId);
+            const user = appState.user;
+
+            // 构造上下文
+            const contextMessages = messages
+                .slice(-config.contextLength * 2) // 取最近N轮
+                .map(msg => ({
+                    role: msg.sender === 'user' ? 'user' : 'assistant',
+                    content: msg.content
+                }));
+
+            // 构造系统提示词，包含角色信息和用户信息
+            const systemPrompt = `你是${role.name}。${role.prompt || ''}
+
+用户信息：
+- 姓名：${user.name}
+- 简介：${user.bio || '暂无简介'}
+
+请根据角色设定与用户进行对话，可以适当称呼用户的姓名。`;
+
+            let requestConfig;
+            let url = config.endpoint;
+
+            switch (config.provider) {
+                case 'openai':
+                case 'deepseek':
+                case 'moonshot':
+                    // OpenAI兼容格式
+                    contextMessages.unshift({
+                        role: 'system',
+                        content: systemPrompt
+                    });
+
+                    requestConfig = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${config.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: config.model,
+                            messages: contextMessages,
+                            temperature: config.temperature,
+                            max_tokens: 2000
+                        })
+                    };
+                    break;
+
+                case 'claude':
+                    // Claude格式
+                    const claudeMessages = contextMessages.filter(msg => msg.role !== 'system');
+
+                    requestConfig = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': config.apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: config.model,
+                            max_tokens: 2000,
+                            system: systemPrompt,
+                            messages: claudeMessages,
+                            temperature: config.temperature
+                        })
+                    };
+                    break;
+
+                case 'gemini':
+                    // Gemini格式
+                    const geminiUrl = config.endpoint.replace('{model}', config.model) + `?key=${config.apiKey}`;
+
+                    // 转换消息格式
+                    const geminiContents = contextMessages
+                        .filter(msg => msg.role !== 'system')
+                        .map(msg => ({
+                            role: msg.role === 'assistant' ? 'model' : 'user',
+                            parts: [{ text: msg.content }]
+                        }));
+
+                    requestConfig = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            system_instruction: {
+                                parts: [{ text: systemPrompt }]
+                            },
+                            contents: geminiContents,
+                            generationConfig: {
+                                temperature: config.temperature,
+                                maxOutputTokens: 2000
+                            }
+                        })
+                    };
+                    url = geminiUrl;
+                    break;
+
+                default:
+                    // 默认使用OpenAI格式
+                    contextMessages.unshift({
+                        role: 'system',
+                        content: systemPrompt
+                    });
+
+                    requestConfig = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${config.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: config.model,
+                            messages: contextMessages,
+                            temperature: config.temperature,
+                            max_tokens: 2000
+                        })
+                    };
+            }
+
+            // 发起请求
+            const resp = await fetch(url, requestConfig);
+
+            if (!resp.ok) {
+                const errorText = await resp.text();
+                console.error('API请求失败:', errorText);
+                throw new Error(`API请求失败: ${resp.status} ${resp.statusText}`);
+            }
+
+            const data = await resp.json();
+
+            // 根据不同提供商解析响应
+            switch (config.provider) {
+                case 'openai':
+                case 'deepseek':
+                case 'moonshot':
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        return data.choices[0].message.content.trim();
+                    }
+                    break;
+
+                case 'claude':
+                    if (data.content && data.content[0] && data.content[0].text) {
+                        return data.content[0].text.trim();
+                    }
+                    break;
+
+                case 'gemini':
+                    if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+                        return data.candidates[0].content.parts[0].text.trim();
+                    }
+                    break;
+
+                default:
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        return data.choices[0].message.content.trim();
+                    } else if (data.choices && data.choices[0] && data.choices[0].text) {
+                        return data.choices[0].text.trim();
+                    }
+            }
+
+            console.error('无法解析AI响应:', data);
+            throw new Error('AI回复解析失败');
+        }
+
+        // 打字指示器（如有）
+        function showTypingIndicator() {
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message-row';
+            typingIndicator.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-bubble">
+                    <div class="message-content">
+                        <span class="typing-indicator">
+                            <span>.</span><span>.</span><span>.</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+            dom.chatMessages.appendChild(typingIndicator);
+            dom.chatMessages.scrollTop = dom.chatMessages.scrollHeight;
+        }
+        function hideTypingIndicator() {
+            const typing = dom.chatMessages.querySelector('.typing-indicator');
+            if (typing) typing.closest('.message-row').remove();
+        }
+        
+        // 初始化应用
+        window.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            // 不需要在这里绑定头像和设置事件，initApp会自动调用
+            bindModalCloseEvents();
+        });
+
+        function saveNewRole() {
+            const roleId = dom.saveRole.dataset.editRoleId;
+            const name = document.getElementById('roleName').value.trim();
+            const prompt = document.getElementById('rolePrompt').value.trim();
+            const avatarInput = document.getElementById('roleAvatar');
+            let avatar = null;
+
+            // 找到要修改的角色
+            const role = appState.roles.find(r => r.id === roleId);
+            if (!role) return;
+
+            // 头像处理（如有新上传则用新头像，否则保持原头像）
+            if (avatarInput.files && avatarInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    role.avatar = e.target.result;
+                    updateRoleAndClose();
+                };
+                reader.readAsDataURL(avatarInput.files[0]);
+            } else {
+                // 没有新头像，直接保存
+                updateRoleAndClose();
+            }
+
+            function updateRoleAndClose() {
+                role.name = name;
+                role.prompt = prompt;
+                saveData();
+                renderChatList();
+                // 关闭弹窗
+                dom.addRoleModal.classList.remove('active');
+                // 如果当前聊天用的是这个角色，刷新聊天头部
+                if (appState.currentChat) {
+                    const chat = appState.chats.find(c => c.id === appState.currentChat);
+                    if (chat && chat.roleId === roleId) {
+                        openChat(chat.id);
+                    }
+                }
+            }
+        }
+
+        // 清除当前聊天记录
+        function clearCurrentChatHistory() {
+            if (!appState.currentChat) return;
+            const chat = appState.chats.find(c => c.id === appState.currentChat);
+            if (!chat) return;
+            chat.messages = [];
+            chat.lastMessage = '';
+            chat.lastTime = '';
+            saveData();
+            renderMessages(chat.messages);
+            renderChatList();
+        }
+
+        function bindClearChatBtnEvent() {
+            const clearBtn = document.getElementById('clearChatBtn');
+            if (clearBtn) {
+                clearBtn.onclick = function() {
+                    if (confirm('确认清除当前全部对话内容？')) {
+                        clearCurrentChatHistory();
+                    }
+                };
+            }
+        }
+
+        // API配置相关函数
+        function updateApiConfigFields() {
+            const provider = document.getElementById('apiProvider').value;
+            const endpointInput = document.getElementById('apiEndpoint');
+            const endpointHelp = document.getElementById('endpointHelp');
+            const modelSelect = document.getElementById('aiModel');
+            const modelHelp = document.getElementById('modelHelp');
+            const apiKeyHelp = document.getElementById('apiKeyHelp');
+
+            // 更新端点
+            if (apiEndpoints[provider]) {
+                endpointInput.value = apiEndpoints[provider].endpoint;
+                endpointHelp.textContent = apiEndpoints[provider].help;
+            }
+
+            // 更新模型列表
+            modelSelect.innerHTML = '';
+            if (apiModels[provider]) {
+                apiModels[provider].forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name;
+                    if (model.tag) {
+                        const tagClass = model.tag === 'recommended' ? 'model-recommended' :
+                                       model.tag === 'popular' ? 'model-popular' : 'model-latest';
+                        option.textContent += ` [${model.tag === 'recommended' ? '推荐' :
+                                                   model.tag === 'popular' ? '热门' : '最新'}]`;
+                    }
+                    modelSelect.appendChild(option);
+                });
+
+                // 设置默认选择第一个推荐模型
+                const recommendedModel = apiModels[provider].find(m => m.tag === 'recommended');
+                if (recommendedModel) {
+                    modelSelect.value = recommendedModel.id;
+                }
+            }
+
+            // 更新帮助文本
+            updateModelHelp();
+            updateApiKeyHelp(provider);
+        }
+
+        function updateModelHelp() {
+            const provider = document.getElementById('apiProvider').value;
+            const modelId = document.getElementById('aiModel').value;
+            const modelHelp = document.getElementById('modelHelp');
+
+            if (apiModels[provider]) {
+                const model = apiModels[provider].find(m => m.id === modelId);
+                if (model && model.desc) {
+                    modelHelp.textContent = model.desc;
+                } else {
+                    modelHelp.textContent = '请选择适合您需求的模型';
+                }
+            }
+        }
+
+        function updateApiKeyHelp(provider) {
+            const apiKeyHelp = document.getElementById('apiKeyHelp');
+            const helpTexts = {
+                openai: '请输入您的OpenAI API Key，格式：sk-...',
+                claude: '请输入您的Anthropic API Key',
+                gemini: '请输入您的Google API Key',
+                deepseek: '请输入您的DeepSeek API Key',
+                zhipu: '请输入您的智谱AI API Key',
+                moonshot: '请输入您的月之暗面API Key',
+                yi: '请输入您的零一万物API Key',
+                baidu: '请输入您的百度API Key或Access Token',
+                alibaba: '请输入您的阿里云API Key',
+                tencent: '请输入您的腾讯云API Key',
+                xunfei: '请输入您的讯飞API Key',
+                minimax: '请输入您的MiniMax API Key',
+                custom: '请输入您的自定义API Key'
+            };
+            apiKeyHelp.textContent = helpTexts[provider] || '请输入API密钥';
+        }
+
+        function saveApiConfig() {
+            const config = {
+                provider: document.getElementById('apiProvider').value,
+                apiKey: document.getElementById('apiKey').value,
+                endpoint: document.getElementById('apiEndpoint').value,
+                model: document.getElementById('aiModel').value,
+                contextLength: parseInt(document.getElementById('contextLength').value),
+                responseDelay: parseInt(document.getElementById('responseDelay').value),
+                temperature: parseFloat(document.getElementById('temperature').value)
+            };
+
+            // 验证必填字段
+            if (!config.apiKey.trim()) {
+                alert('请输入API密钥');
+                return;
+            }
+            if (!config.endpoint.trim()) {
+                alert('请输入API端点');
+                return;
+            }
+
+            // 保存配置
+            appState.apiConfig = config;
+            saveData();
+
+            // 关闭模态框
+            document.getElementById('apiConfigModal').classList.remove('active');
+            alert('API配置已保存');
+        }
+
+        async function testApiConnection() {
+            const config = {
+                provider: document.getElementById('apiProvider').value,
+                apiKey: document.getElementById('apiKey').value.trim(),
+                endpoint: document.getElementById('apiEndpoint').value.trim(),
+                model: document.getElementById('aiModel').value
+            };
+
+            if (!config.apiKey) {
+                alert('请先输入API密钥');
+                return;
+            }
+            if (!config.endpoint) {
+                alert('请先输入API端点');
+                return;
+            }
+
+            // 显示测试中状态
+            const testBtn = document.getElementById('testApiConnection');
+            const originalText = testBtn.textContent;
+            testBtn.textContent = '测试中...';
+            testBtn.disabled = true;
+
+            try {
+                // 首先验证API Key格式
+                const keyValidation = validateApiKey(config.provider, config.apiKey);
+                if (!keyValidation.valid) {
+                    throw new Error(`API密钥格式错误: ${keyValidation.message}`);
+                }
+
+                // 发送测试请求
+                const result = await sendTestRequest(config);
+
+                testBtn.textContent = originalText;
+                testBtn.disabled = false;
+
+                if (result.success) {
+                    alert(`✅ API连接测试成功！\n\n响应信息：${result.message}`);
+                } else {
+                    alert(`❌ API连接测试失败：\n\n${result.error}`);
+                }
+            } catch (error) {
+                testBtn.textContent = originalText;
+                testBtn.disabled = false;
+                alert(`❌ 测试失败：\n\n${error.message}`);
+            }
+        }
+
+        function validateApiKey(provider, apiKey) {
+            const validations = {
+                openai: {
+                    pattern: /^sk-[a-zA-Z0-9\-_]{20,}$/,
+                    message: 'OpenAI API Key应以"sk-"开头'
+                },
+                claude: {
+                    pattern: /^sk-ant-[a-zA-Z0-9\-_]{50,}$/,
+                    message: 'Claude API Key应以"sk-ant-"开头'
+                },
+                gemini: {
+                    pattern: /^[a-zA-Z0-9\-_]{20,}$/,
+                    message: 'Gemini API Key应为20位以上字符'
+                },
+                deepseek: {
+                    pattern: /^sk-[a-zA-Z0-9\-_]{20,}$/,
+                    message: 'DeepSeek API Key应以"sk-"开头，后跟20位以上字符'
+                },
+                zhipu: {
+                    pattern: /^[a-zA-Z0-9]{20,}\.[a-zA-Z0-9]{6,}$/,
+                    message: '智谱AI API Key格式：数字字母.数字字母'
+                },
+                moonshot: {
+                    pattern: /^sk-[a-zA-Z0-9\-_]{20,}$/,
+                    message: 'Moonshot API Key应以"sk-"开头'
+                },
+                yi: {
+                    pattern: /^[a-zA-Z0-9\-_]{20,}$/,
+                    message: 'Yi API Key应为20位以上字符'
+                },
+                baidu: {
+                    pattern: /^[a-zA-Z0-9\-_]{20,}$/,
+                    message: '百度API Key应为20位以上字符'
+                },
+                alibaba: {
+                    pattern: /^sk-[a-zA-Z0-9\-_]{20,}$/,
+                    message: '阿里API Key应以"sk-"开头'
+                },
+                tencent: {
+                    pattern: /^[a-zA-Z0-9\-_]{20,}$/,
+                    message: '腾讯API Key应为20位以上字符'
+                },
+                xunfei: {
+                    pattern: /^[a-zA-Z0-9\-_]{20,}$/,
+                    message: '讯飞API Key应为20位以上字符'
+                },
+                minimax: {
+                    pattern: /^[a-zA-Z0-9\-_]{20,}$/,
+                    message: 'MiniMax API Key应为20位以上字符'
+                }
+            };
+
+            const validation = validations[provider];
+            if (!validation) {
+                return { valid: true, message: '未知提供商，跳过格式验证' };
+            }
+
+            const isValid = validation.pattern.test(apiKey);
+            return {
+                valid: isValid,
+                message: isValid ? '格式正确' : validation.message
+            };
+        }
+
+        async function sendTestRequest(config) {
+            const testMessage = "Hello, this is a test message.";
+
+            try {
+                let requestConfig;
+
+                switch (config.provider) {
+                    case 'openai':
+                    case 'deepseek':
+                    case 'moonshot':
+                        requestConfig = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${config.apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: config.model,
+                                messages: [{ role: 'user', content: testMessage }],
+                                max_tokens: 10
+                            })
+                        };
+                        break;
+
+                    case 'claude':
+                        requestConfig = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'x-api-key': config.apiKey,
+                                'anthropic-version': '2023-06-01'
+                            },
+                            body: JSON.stringify({
+                                model: config.model,
+                                max_tokens: 10,
+                                messages: [{ role: 'user', content: testMessage }]
+                            })
+                        };
+                        break;
+
+                    case 'gemini':
+                        const geminiEndpoint = config.endpoint.replace('{model}', config.model) + `?key=${config.apiKey}`;
+                        requestConfig = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [{ text: testMessage }]
+                                }],
+                                generationConfig: {
+                                    maxOutputTokens: 10
+                                }
+                            })
+                        };
+                        config.endpoint = geminiEndpoint;
+                        break;
+
+                    default:
+                        // 对于其他提供商，使用通用格式
+                        requestConfig = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${config.apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: config.model,
+                                messages: [{ role: 'user', content: testMessage }],
+                                max_tokens: 10
+                            })
+                        };
+                }
+
+                const response = await fetch(config.endpoint, requestConfig);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage;
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error?.message || errorJson.message || errorText;
+                    } catch {
+                        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+
+                // 解析响应内容
+                let responseContent = '';
+                switch (config.provider) {
+                    case 'openai':
+                    case 'deepseek':
+                    case 'moonshot':
+                        responseContent = data.choices?.[0]?.message?.content || '收到响应';
+                        break;
+                    case 'claude':
+                        responseContent = data.content?.[0]?.text || '收到响应';
+                        break;
+                    case 'gemini':
+                        responseContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '收到响应';
+                        break;
+                    default:
+                        responseContent = '收到响应';
+                }
+
+                return {
+                    success: true,
+                    message: `模型响应: "${responseContent}"`
+                };
+
+            } catch (error) {
+                // 检查是否是CORS错误
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    return {
+                        success: false,
+                        error: `网络错误：可能是CORS限制。\n\n建议：\n1. 检查API密钥和端点是否正确\n2. 某些API需要在服务器端调用\n3. 可以尝试使用代理服务器\n\n技术详情：${error.message}`
+                    };
+                }
+
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        function loadApiConfigToModal() {
+            const config = appState.apiConfig;
+
+            // 绑定API相关事件监听器（每次打开模态框时重新绑定）
+            bindApiEventListeners();
+
+            // 加载当前配置到表单
+            document.getElementById('apiProvider').value = config.provider || 'openai';
+            document.getElementById('apiKey').value = config.apiKey || '';
+            document.getElementById('apiEndpoint').value = config.endpoint || '';
+            document.getElementById('contextLength').value = config.contextLength || 5;
+            document.getElementById('contextValue').textContent = config.contextLength || 5;
+            document.getElementById('responseDelay').value = config.responseDelay || 1000;
+            document.getElementById('temperature').value = config.temperature || 0.7;
+
+            // 更新字段（这会自动设置端点和模型列表）
+            updateApiConfigFields();
+
+            // 如果有保存的模型，设置它
+            if (config.model) {
+                document.getElementById('aiModel').value = config.model;
+                updateModelHelp();
+            }
+        }
+
+        function bindApiEventListeners() {
+            // 直接绑定事件监听器，使用 onclick 等属性避免重复绑定
+            const apiProvider = document.getElementById('apiProvider');
+            const aiModel = document.getElementById('aiModel');
+            const saveConfigBtn = document.getElementById('saveApiConfig');
+            const testConnBtn = document.getElementById('testApiConnection');
+            const contextLength = document.getElementById('contextLength');
+            const toggleApiKey = document.getElementById('toggleApiKey');
+
+            if (apiProvider) {
+                apiProvider.onchange = updateApiConfigFields;
+            }
+
+            if (aiModel) {
+                aiModel.onchange = updateModelHelp;
+            }
+
+            if (saveConfigBtn) {
+                saveConfigBtn.onclick = saveApiConfig;
+            }
+
+            if (testConnBtn) {
+                testConnBtn.onclick = testApiConnection;
+            }
+
+            if (contextLength) {
+                contextLength.oninput = function() {
+                    document.getElementById('contextValue').textContent = this.value;
+                };
+            }
+
+            if (toggleApiKey) {
+                toggleApiKey.onclick = toggleApiKeyVisibility;
+            }
+        }
+
+        function toggleApiKeyVisibility() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const toggleIcon = document.querySelector('#toggleApiKey i');
+
+            if (apiKeyInput.type === 'password') {
+                apiKeyInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+                document.getElementById('toggleApiKey').title = '隐藏密钥';
+            } else {
+                apiKeyInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+                document.getElementById('toggleApiKey').title = '显示密钥';
+            }
+        }
+
+        // 用户信息编辑相关函数
+        function loadUserInfoToModal() {
+            const user = appState.user;
+
+            // 加载当前用户信息到表单
+            document.getElementById('userName').value = user.name || '用户';
+            document.getElementById('userBio').value = user.bio || '';
+
+            // 更新预览
+            updateUserPreview();
+
+            // 绑定头像上传事件
+            const avatarInput = document.getElementById('userAvatar');
+            avatarInput.onchange = function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // 临时保存头像数据，等保存时再应用
+                        avatarInput.tempAvatarData = e.target.result;
+                        updateUserPreview();
+                    };
+                    reader.readAsDataURL(this.files[0]);
+                }
+            };
+
+            // 绑定保存按钮事件
+            const saveBtn = document.getElementById('saveUserInfo');
+            saveBtn.onclick = saveUserInfo;
+
+            // 绑定实时预览事件
+            document.getElementById('userName').oninput = updateUserPreview;
+            document.getElementById('userBio').oninput = updateUserPreview;
+        }
+
+        function updateUserPreview() {
+            const nameInput = document.getElementById('userName');
+            const bioInput = document.getElementById('userBio');
+            const avatarInput = document.getElementById('userAvatar');
+
+            const previewAvatar = document.querySelector('.preview-avatar');
+            const previewName = document.querySelector('.preview-name');
+            const previewBio = document.querySelector('.preview-bio');
+
+            // 更新名称
+            const name = nameInput.value.trim() || '用户';
+            previewName.textContent = name;
+
+            // 更新简介
+            const bio = bioInput.value.trim() || 'AI角色扮演爱好者';
+            previewBio.textContent = bio;
+
+            // 更新头像
+            if (avatarInput.tempAvatarData) {
+                previewAvatar.innerHTML = `<img src="${avatarInput.tempAvatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />`;
+            } else if (appState.user.avatar && appState.user.avatar.startsWith('data:image')) {
+                previewAvatar.innerHTML = `<img src="${appState.user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;" />`;
+            } else {
+                previewAvatar.textContent = (appState.user.avatar || name.charAt(0).toUpperCase());
+            }
+        }
+
+        function saveUserInfo() {
+            const nameInput = document.getElementById('userName');
+            const bioInput = document.getElementById('userBio');
+            const avatarInput = document.getElementById('userAvatar');
+
+            const name = nameInput.value.trim();
+            const bio = bioInput.value.trim();
+
+            if (!name) {
+                alert('请输入用户昵称');
+                return;
+            }
+
+            // 更新用户信息
+            appState.user.name = name;
+            appState.user.bio = bio;
+
+            // 如果有新头像，更新头像
+            if (avatarInput.tempAvatarData) {
+                appState.user.avatar = avatarInput.tempAvatarData;
+            } else if (!appState.user.avatar || !appState.user.avatar.startsWith('data:image')) {
+                // 如果没有图片头像，使用首字母
+                appState.user.avatar = name.charAt(0).toUpperCase();
+            }
+
+            // 保存数据
+            saveData();
+
+            // 重新渲染当前聊天（如果有的话）
+            if (appState.currentChat) {
+                const chat = appState.chats.find(c => c.id === appState.currentChat);
+                if (chat) {
+                    renderMessages(chat.messages);
+                }
+            }
+
+            // 关闭模态框
+            document.getElementById('userInfoModal').classList.remove('active');
+            alert('用户信息已保存');
+        }
+    </script>
+</body>
+</html>
